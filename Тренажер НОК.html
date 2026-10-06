@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: НОК</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr { font-size: 18px; font-weight: 600; }
+
+  .task input {
+    width: 110px; padding: 8px 10px; font-size: 16px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    text-align: center;
+  }
+  .task input:focus { border-color: #4338ca; }
+
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .task .answer { font-size: 14px; color: #6b7280; margin-left: auto; }
+  .task .answer b { color: #b91c1c; }
+
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+  }
+  #check { background: #4338ca; color: #fff; }
+  #check:hover { background: #3730a3; }
+  #reset { background: #e5e7eb; color: #374151; }
+  #reset:hover { background: #d1d5db; }
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔗 Тренажёр: наименьшее общее кратное (НОК)</h1>
+  <div class="sub">
+    Найдите НОК двух или трёх чисел. Введите ответ одним числом и нажмите «Проверить».
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / 20</span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <div id="tasks"></div>
+
+  <div class="btns">
+    <button id="check">Проверить</button>
+    <button id="reset">Пройти заново</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// ---------- Математика ----------
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b ? gcd(b, a % b) : a; }
+function lcm2(a, b) { return Math.abs(a * b) / gcd(a, b); }
+function lcm3(a, b, c) { return lcm2(lcm2(a, b), c); }
+
+// ---------- Генерация примеров ----------
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Ограничения: числа ≤ 200 (иначе НОК тройки разрастается), ответ ≤ 5000
+function goodAnswer(l) {
+  return l > 1 && l <= 5000;
+}
+
+// 1) Взаимно простые пары → НОК = произведение
+const coprimePairs = [
+  [4, 9], [7, 10], [8, 15], [11, 13], [16, 25],
+  [9, 25], [14, 27], [21, 32], [35, 64], [49, 100],
+  [13, 20], [17, 24], [19, 30], [23, 36], [29, 40],
+  [31, 45], [37, 50], [41, 60], [43, 70], [47, 80],
+  [121, 25], [169, 49], [125, 64], [143, 16], [187, 27]
+];
+
+// 2) Пары «одно делится на другое» → НОК = большее
+const multiplePairs = [
+  [4, 12], [6, 18], [8, 24], [9, 36], [10, 40],
+  [12, 48], [15, 45], [16, 48], [20, 60], [25, 75],
+  [14, 42], [18, 54], [21, 63], [24, 72], [30, 90],
+  [36, 108], [40, 120], [45, 135], [50, 150], [60, 180]
+];
+
+// 3) Тройки с общим делителем (НОК ≠ просто произведение)
+const tripleCandidates = [
+  [4, 6, 8], [6, 9, 12], [8, 12, 16], [10, 15, 20],
+  [12, 18, 24], [14, 21, 28], [15, 20, 30], [16, 24, 32],
+  [18, 24, 36], [20, 30, 40], [21, 28, 42], [24, 36, 48],
+  [25, 30, 50], [30, 45, 60], [36, 48, 72], [40, 60, 80],
+  [6, 10, 15], [9, 12, 18], [8, 20, 25], [12, 15, 20]
+];
+
+// 4) Степени и кратные одного простого числа (методически полезно)
+const primePowers = [
+  [4, 8], [8, 16], [9, 27], [16, 32], [25, 125],
+  [27, 81], [32, 64], [49, 343], [125, 25], [64, 16]
+];
+
+const pool = [];
+
+coprimePairs.forEach(p => {
+  if (goodAnswer(lcm2(p[0], p[1]))) pool.push({ nums: p, type: 'coprime' });
+});
+multiplePairs.forEach(p => {
+  if (goodAnswer(lcm2(p[0], p[1]))) pool.push({ nums: p, type: 'multiple' });
+});
+tripleCandidates.forEach(t => {
+  if (goodAnswer(lcm3(t[0], t[1], t[2]))) pool.push({ nums: t, type: 'triple' });
+});
+primePowers.forEach(p => {
+  if (goodAnswer(lcm2(p[0], p[1]))) pool.push({ nums: p, type: 'prime' });
+});
+
+// Случайные пары с общим делителем, но не взаимно простые и не кратные
+for (let i = 0; i < 40; i++) {
+  const d = rand(2, 12);
+  let a = d * rand(2, Math.floor(60 / d));
+  let b = d * rand(2, Math.floor(60 / d));
+  if (a === b || gcd(a, b) === 1 || a % b === 0 || b % a === 0) continue;
+  if (a < 4 || b < 4 || a > 200 || b > 200) continue;
+  const l = lcm2(a, b);
+  if (goodAnswer(l)) pool.push({ nums: [a, b], type: 'common' });
+}
+
+// Берём ровно 20 с балансом: 7 пар взаимно простых, 5 кратных, 5 троек, 3 «общий делитель»
+function pickByType(arr, n) {
+  const byType = { coprime: [], multiple: [], triple: [], prime: [], common: [] };
+  arr.forEach(p => byType[p.type].push(p));
+  return {
+    coprime:  shuffle(byType.coprime).slice(0, 6),
+    multiple: shuffle(byType.multiple).slice(0, 5),
+    prime:    shuffle(byType.prime).slice(0, 2),
+    triple:   shuffle(byType.triple).slice(0, 5),
+    common:   shuffle(byType.common).slice(0, 2)
+  };
+}
+
+// ---------- Интерфейс ----------
+const tasksEl = document.getElementById('tasks');
+const solvedEl = document.getElementById('solved');
+const correctEl = document.getElementById('correct');
+const pbar = document.getElementById('pbar');
+const resultEl = document.getElementById('result');
+
+let state = [];
+
+function build() {
+  const byType = pickByType(pool, 20);
+  const chosen = [
+    ...byType.coprime,
+    ...byType.multiple,
+    ...byType.prime,
+    ...byType.triple,
+    ...byType.common
+  ];
+  // Добираем до 20 случайными из пула, если какого-то типа не хватило
+  while (chosen.length < 20) {
+    const t = pool[Math.floor(Math.random() * pool.length)];
+    if (!chosen.includes(t)) chosen.push(t);
+  }
+  shuffle(chosen);
+
+  state = chosen.slice(0, 20).map(t => {
+    const g = t.nums.length === 2
+      ? lcm2(t.nums[0], t.nums[1])
+      : lcm3(t.nums[0], t.nums[1], t.nums[2]);
+    return { ...t, answer: g };
+  });
+
+  tasksEl.innerHTML = '';
+  state.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+
+    const args = t.nums.join(', ');
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">НОК(${args}) =</span>
+      <input type="number" min="1" inputmode="numeric" placeholder="?">
+      <span class="mark"></span>
+      <span class="answer"></span>
+    `;
+    tasksEl.appendChild(div);
+  });
+
+  solvedEl.textContent = '0';
+  correctEl.textContent = '0';
+  pbar.style.width = '0%';
+  resultEl.className = 'result';
+  resultEl.textContent = '';
+
+  tasksEl.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', updateProgress);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkAll();
+    });
+  });
+}
+
+function updateProgress() {
+  let solved = 0, correct = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const inp = div.querySelector('input');
+    const i = +div.dataset.i;
+    if (inp.value.trim() !== '') {
+      solved++;
+      if (+inp.value === state[i].answer) correct++;
+    }
+  });
+  solvedEl.textContent = solved;
+  correctEl.textContent = correct;
+  pbar.style.width = (solved / state.length * 100) + '%';
+  return { solved, correct };
+}
+
+function checkAll() {
+  let correct = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const inp = div.querySelector('input');
+    const i = +div.dataset.i;
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.answer');
+    div.classList.remove('ok', 'err');
+
+    if (inp.value.trim() === '') {
+      mark.textContent = '';
+      ansEl.textContent = '';
+      return;
+    }
+    if (+inp.value === state[i].answer) {
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+      correct++;
+    } else {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.innerHTML = 'ответ: <b>' + state[i].answer + '</b>';
+    }
+  });
+
+  updateProgress();
+
+  if (correct === 20) {
+    resultEl.className = 'result show good';
+    resultEl.textContent = '🎉 Отлично! Все 20 примеров решены верно!';
+  } else if (correct >= 16) {
+    resultEl.className = 'result show good';
+    resultEl.textContent = `Хороший результат: ${correct} из 20. Ошибки подсвечены — разберите их.`;
+  } else {
+    resultEl.className = 'result show bad';
+    resultEl.textContent = `Верно ${correct} из 20. Посмотрите правильные ответы в красных строках.`;
+  }
+}
+
+document.getElementById('check').addEventListener('click', checkAll);
+document.getElementById('reset').addEventListener('click', build);
+
+build();
+</script>
+</body>
+</html>

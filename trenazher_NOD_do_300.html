@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: НОД</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div {
+    height: 100%; width: 0; background: #4338ca; transition: .3s;
+  }
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+    padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr { font-size: 18px; font-weight: 600; }
+  .task input {
+    width: 90px; padding: 8px 10px; font-size: 16px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+  }
+  .task input:focus { border-color: #4338ca; }
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .task .answer { font-size: 14px; color: #6b7280; margin-left: auto; }
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+  }
+  #check { background: #4338ca; color: #fff; }
+  #check:hover { background: #3730a3; }
+  #reset { background: #e5e7eb; color: #374151; }
+  #reset:hover { background: #d1d5db; }
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+
+  @media (max-width: 560px) {
+    body { padding: 10px; }
+    .container { padding: 16px; border-radius: 12px; }
+    .bar { gap: 8px; font-size: 13px; }
+    .task { padding: 13px; }
+    .task .expr { font-size: 16px; }
+    .task input { width: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🧮 Тренажёр: нахождение НОД</h1>
+  <div class="sub">
+    Найдите наибольший общий делитель. Все числа — не больше 300.
+    Есть примеры с двумя и тремя числами, а также взаимно простые.
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / 20</span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <div id="tasks"></div>
+
+  <div class="btns">
+    <button id="check">Проверить</button>
+    <button id="reset">Пройти заново</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const TASK_COUNT = 20;
+
+function gcd(a, b) {
+  return b ? gcd(b, a % b) : a;
+}
+
+function gcd3(a, b, c) {
+  return gcd(gcd(a, b), c);
+}
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const pool = [];
+
+// 1. Взаимно простые пары — все числа <= 300
+const coprimePairs = [
+  [35, 64], [49, 100], [121, 200], [91, 243], [143, 256],
+  [77, 120], [169, 210], [187, 300], [209, 280], [221, 290],
+  [255, 256], [16, 81], [25, 144], [27, 125], [32, 121],
+  [45, 98], [23, 300], [37, 200], [47, 270], [73, 250]
+];
+
+coprimePairs.forEach(p => pool.push({
+  nums: p,
+  type: 'coprime2'
+}));
+
+// 2. Взаимно простые тройки — все числа <= 300
+const coprimeTriples = [
+  [4, 9, 25],
+  [8, 27, 125],
+  [11, 49, 100],
+  [16, 25, 81],
+  [7, 121, 200],
+  [13, 64, 243],
+  [17, 100, 169],
+  [19, 125, 256]
+];
+
+coprimeTriples.forEach(t => pool.push({
+  nums: t,
+  type: 'coprime3'
+}));
+
+// 3. Пары с общим делителем — числа <= 300
+for (let i = 0; i < 14; i++) {
+  const d = rand(2, 20);
+  const maxMultiplier = Math.floor(300 / d);
+
+  let a = d * rand(2, maxMultiplier);
+  let b = d * rand(2, maxMultiplier);
+
+  if (a === b) {
+    b = d * (a / d < maxMultiplier ? a / d + 1 : 2);
+  }
+
+  pool.push({
+    nums: [a, b],
+    type: 'pair'
+  });
+}
+
+// 4. Тройки с общим делителем — числа <= 300
+for (let i = 0; i < 14; i++) {
+  const d = rand(2, 12);
+  const maxMultiplier = Math.floor(300 / d);
+
+  const a = d * rand(2, maxMultiplier);
+  const b = d * rand(2, maxMultiplier);
+  const c = d * rand(2, maxMultiplier);
+
+  pool.push({
+    nums: [a, b, c],
+    type: 'triple'
+  });
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function makeChosenTasks() {
+  const byType = {
+    coprime2: [],
+    coprime3: [],
+    pair: [],
+    triple: []
+  };
+
+  pool.forEach(p => byType[p.type].push(p));
+
+  const chosen = [];
+
+  // Баланс: 5 взаимно простых пар,
+  // 3 взаимно простые тройки,
+  // 6 обычных пар,
+  // 6 обычных троек.
+  shuffle([...byType.coprime2]).slice(0, 5).forEach(p => chosen.push(p));
+  shuffle([...byType.coprime3]).slice(0, 3).forEach(p => chosen.push(p));
+  shuffle([...byType.pair]).slice(0, 6).forEach(p => chosen.push(p));
+  shuffle([...byType.triple]).slice(0, 6).forEach(p => chosen.push(p));
+
+  return shuffle(chosen);
+}
+
+let state = [];
+
+const tasksEl = document.getElementById('tasks');
+const solvedEl = document.getElementById('solved');
+const correctEl = document.getElementById('correct');
+const pbar = document.getElementById('pbar');
+const resultEl = document.getElementById('result');
+
+function build() {
+  tasksEl.innerHTML = '';
+
+  const chosen = makeChosenTasks();
+
+  state = chosen.map(t => {
+    const answer = t.nums.length === 2
+      ? gcd(t.nums[0], t.nums[1])
+      : gcd3(t.nums[0], t.nums[1], t.nums[2]);
+
+    return { ...t, answer };
+  });
+
+  state.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+
+    const expr = t.nums.length === 2
+      ? `НОД(${t.nums[0]}, ${t.nums[1]}) =`
+      : `НОД(${t.nums[0]}, ${t.nums[1]}, ${t.nums[2]}) =`;
+
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">${expr}</span>
+      <input type="number" min="1" max="300" step="1"
+             inputmode="numeric" placeholder="?">
+      <span class="mark"></span>
+      <span class="answer"></span>
+    `;
+
+    tasksEl.appendChild(div);
+  });
+
+  solvedEl.textContent = '0';
+  correctEl.textContent = '0';
+  pbar.style.width = '0%';
+  resultEl.className = 'result';
+  resultEl.textContent = '';
+
+  const inputs = tasksEl.querySelectorAll('input');
+
+  inputs.forEach((inp, index) => {
+    inp.addEventListener('input', updateProgress);
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        if (inputs[index + 1]) {
+          inputs[index + 1].focus();
+        } else {
+          checkAll();
+        }
+      }
+    });
+  });
+}
+
+function updateProgress() {
+  let solved = 0;
+  let correct = 0;
+
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const inp = div.querySelector('input');
+    const i = Number(div.dataset.i);
+
+    if (inp.value.trim() !== '') {
+      solved++;
+
+      if (Number(inp.value) === state[i].answer) {
+        correct++;
+      }
+    }
+  });
+
+  solvedEl.textContent = solved;
+  correctEl.textContent = correct;
+  pbar.style.width = `${solved / TASK_COUNT * 100}%`;
+}
+
+function checkAll() {
+  let correct = 0;
+  let solved = 0;
+
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const inp = div.querySelector('input');
+    const i = Number(div.dataset.i);
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.answer');
+
+    div.classList.remove('ok', 'err');
+
+    if (inp.value.trim() === '') {
+      mark.textContent = '';
+      ansEl.textContent = '';
+      return;
+    }
+
+    solved++;
+
+    if (Number(inp.value) === state[i].answer) {
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+      correct++;
+    } else {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.textContent = 'ответ: ' + state[i].answer;
+    }
+  });
+
+  solvedEl.textContent = solved;
+  correctEl.textContent = correct;
+  pbar.style.width = `${solved / TASK_COUNT * 100}%`;
+
+  resultEl.className =
+    'result show ' + (correct >= 16 ? 'good' : 'bad');
+
+  if (correct === TASK_COUNT) {
+    resultEl.textContent =
+      '🎉 Отлично! Все 20 примеров решены верно!';
+  } else if (correct >= 16) {
+    resultEl.textContent =
+      `Хороший результат: ${correct} из ${TASK_COUNT}. Ошибки подсвечены — разберите их.`;
+  } else {
+    resultEl.textContent =
+      `Верно ${correct} из ${TASK_COUNT}. Посмотрите правильные ответы в красных строках.`;
+  }
+}
+
+document.getElementById('check').addEventListener('click', checkAll);
+document.getElementById('reset').addEventListener('click', build);
+
+build();
+</script>
+</body>
+</html>
