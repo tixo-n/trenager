@@ -1,222 +1,162 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Математические тренажёры</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математические тренажёры</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #243447;
-        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #243447;
+        }
 
-        header {
-            background: linear-gradient(135deg, #4f7cff, #6c5ce7);
-            color: white;
-            text-align: center;
-            padding: 35px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-        }
+        header {
+            background: linear-gradient(135deg, #4f7cff, #6c5ce7);
+            color: white;
+            text-align: center;
+            padding: 35px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        }
 
-        header h1 {
-            margin: 0 0 10px;
-            font-size: 32px;
-        }
+        header h1 {
+            margin: 0 0 10px;
+            font-size: 32px;
+        }
 
-        header p {
-            margin: 0;
-            font-size: 17px;
-            opacity: 0.9;
-        }
+        header p {
+            margin: 0;
+            font-size: 17px;
+            opacity: 0.9;
+        }
 
-        main {
-            max-width: 1000px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
+        main {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
 
-        .class-block {
-            background: white;
-            border-radius: 18px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 18px rgba(0,0,0,0.08);
-        }
+        .class-block {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+        }
 
-        .class-title {
-            font-size: 25px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #4f5bd5;
-            border-bottom: 2px solid #eef0ff;
-            padding-bottom: 12px;
-        }
+        .class-title {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #4f5bd5;
+            border-bottom: 2px solid #eef0ff;
+            padding-bottom: 12px;
+        }
 
-        .trainers {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
+        .trainers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
 
-        .trainer {
-            display: block;
-            text-decoration: none;
-            color: #243447;
-            background: #f7f8ff;
-            border: 2px solid #e7e9ff;
-            border-radius: 14px;
-            padding: 18px;
-            transition: 0.2s;
-        }
+        .trainer {
+            display: block;
+            text-decoration: none;
+            color: #243447;
+            background: #f7f8ff;
+            border: 2px solid #e7e9ff;
+            border-radius: 14px;
+            padding: 18px;
+            transition: 0.2s;
+        }
 
-        .trainer:hover {
-            transform: translateY(-3px);
-            border-color: #667eea;
-            background: #eef0ff;
-            box-shadow: 0 5px 12px rgba(79,124,255,0.15);
-        }
+        .trainer:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            background: #eef0ff;
+            box-shadow: 0 5px 12px rgba(79,124,255,0.15);
+        }
 
-        .trainer-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
+        .trainer-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
 
-        .trainer-file {
-            font-size: 13px;
-            color: #7b8190;
-        }
+        .trainer-file {
+            font-size: 13px;
+            color: #7b8190;
+        }
 
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #8a8f9d;
-            font-size: 14px;
-        }
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #8a8f9d;
+            font-size: 14px;
+        }
 
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 25px;
-            }
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 25px;
+            }
 
-            .class-block {
-                padding: 18px;
-            }
-        }
-    </style>
+            .class-block {
+                padding: 18px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 <header>
-    <h1>📚 Математические тренажёры</h1>
-    <p>Выберите класс и нужный тренажёр</p>
+    <h1>📚 Математические тренажёры</h1>
+    <p>Выберите класс и нужный тренажёр</p>
 </header>
 
 <main>
 
-    <!-- 5 КЛАСС -->
-    <section class="class-block">
-        <div class="class-title">5 класс</div>
+    <!-- 5 КЛАСС -->
+    <section class="class-block">
+        <div class="class-title">5 класс</div>
 
-        <div class="trainers">
+        <div class="trainers">
 
-            <a class="trainer" href="trenazher_5_1.html">
-                <div class="trainer-name">Тренажёр 1</div>
-                <div class="trainer-file">trenazher_5_1.html</div>
-            </a>
+            <a class="trainer" href="trenazher_5_1.html">
+                <div class="trainer-name">Тренажёр 1</div>
+                <div class="trainer-file">trenazher_5_1.html</div>
+            </a>
 
-            <a class="trainer" href="trenazher_5_2.html">
-                <div class="trainer-name">Тренажёр 2</div>
-                <div class="trainer-file">trenazher_5_2.html</div>
-            </a>
+            <a class="trainer" href="trenazher_5_2.html">
+                <div class="trainer-name">Тренажёр 2</div>
+                <div class="trainer-file">trenazher_5_2.html</div>
+            </a>
 
-        </div>
-    </section>
+        </div>
+    </section>
 
-    <!-- 6 КЛАСС -->
-    <section class="class-block">
-        <div class="class-title">6 класс</div>
 
-        <div class="trainers">
+    <!-- 6 КЛАСС -->
+    <section class="class-block">
+        <div class="class-title">6 класс</div>
 
-            <a class="trainer" href="trenazher_MOS_do_300.html">
-                <div class="trainer-name">НОД — числа до 300</div>
-                <div class="trainer-file">trenazher_MOS_do_300.html</div>
-            </a>
+        <div class="trainers">
 
-            <a class="trainer" href="trenazher_NOK.html">
-                <div class="trainer-name">Тренажёр НОК</div>
-                <div class="trainer-file">trenazher_NOK.html</div>
-            </a>
+            <a class="trainer" href="trenazher_MOS_do_300.html">
+                <div class="trainer-name">НОД — числа до 300</div>
+                <div class="trainer-file">trenazher_MOS_do_300.html</div>
+            </a>
 
-            <a class="trainer" href="trenazher_NOD.html">
-                <div class="trainer-name">Тренажёр НОД</div>
-                <div class="trainer-file">trenazher_NOD.html</div>
-            </a>
+            <a class="trainer" href="trenazher_NOK.html">
+                <div class="trainer-name">Тренажёр НОК</div>
+                <div class="trainer-file">trenazher_NOK.html</div>
+            </a>
 
-            <a class="trainer" href="trenazher_drobi.html">
-                <div class="trainer-name">Сложение и вычитание дробей</div>
-                <div class="trainer-file">trenazher_drobi.html</div>
-            </a>
-
-        </div>
-    </section>
-
-    <!-- 7 КЛАСС -->
-    <section class="class-block">
-        <div class="class-title">7 класс</div>
-
-        <div class="trainers">
-
-            <a class="trainer" href="trenazher_7_1.html">
-                <div class="trainer-name">Тренажёр 1</div>
-                <div class="trainer-file">trenazher_7_1.html</div>
-            </a>
-
-        </div>
-    </section>
-
-    <!-- 8 КЛАСС -->
-    <section class="class-block">
-        <div class="class-title">8 класс</div>
-
-        <div class="trainers">
-
-            <a class="trainer" href="trenazher_8_1.html">
-                <div class="trainer-name">Тренажёр 1</div>
-                <div class="trainer-file">trenazher_8_1.html</div>
-            </a>
-
-        </div>
-    </section>
-
-    <!-- 9 КЛАСС -->
-    <section class="class-block">
-        <div class="class-title">9 класс</div>
-
-        <div class="trainers">
-
-            <a class="trainer" href="trenazher_9_1.html">
-                <div class="trainer-name">Тренажёр 1</div>
-                <div class="trainer-file">trenazher_9_1.html</div>
-            </a>
-
-        </div>
-    </section>
-
-</main>
-
-<footer>
-    Математические тренажёры • Учимся с удовольствием 😊
-</footer>
-
-</body>
-</html>
+            <a class="trainer" href="trenazher_NOD.html">
+                <div class="trainer-name">Тренажёр НОД</div>
