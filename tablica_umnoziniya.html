@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: таблица умножения</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f4f6fb 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.1);
+  }
+
+  h1 { font-size: 26px; margin: 0 0 8px; text-align: center; }
+  .sub { color: #6b7280; font-size: 15px; margin-bottom: 24px; text-align: center; }
+
+  /* ===== Экран старта ===== */
+  .section-title {
+    font-size: 15px; font-weight: 700; color: #4338ca;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin: 22px 0 10px;
+  }
+
+  /* Выбор таблицы */
+  .table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 10px;
+  }
+  .table-grid button {
+    padding: 16px 6px;
+    font-size: 20px;
+    font-weight: 700;
+    background: #f9fafb;
+    color: #374151;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .table-grid button:hover {
+    border-color: #a5b4fc;
+    background: #eef2ff;
+  }
+  .table-grid button.active {
+    background: #4338ca;
+    color: #fff;
+    border-color: #4338ca;
+  }
+
+  /* Режим */
+  .mode-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .mode-row button {
+    padding: 18px 12px;
+    font-size: 16px; font-weight: 700;
+    background: #f9fafb; color: #374151;
+    border: 2px solid #e5e7eb; border-radius: 12px;
+    cursor: pointer; transition: .15s;
+  }
+  .mode-row button:hover { border-color: #a5b4fc; background: #eef2ff; }
+  .mode-row button.active {
+    background: #4338ca; color: #fff; border-color: #4338ca;
+  }
+  .mode-hint { font-size: 13px; color: #6b7280; margin-top: 6px; text-align: center; }
+
+  /* Количество */
+  .count-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+  }
+  .count-buttons button {
+    padding: 18px 6px; font-size: 22px; font-weight: 700;
+    background: #eef2ff; color: #4338ca;
+    border: 2px solid #c7d2fe; border-radius: 12px;
+    cursor: pointer; transition: .15s;
+  }
+  .count-buttons button:hover {
+    background: #4338ca; color: #fff; border-color: #4338ca;
+    transform: translateY(-2px);
+  }
+  .custom-count {
+    display: flex; gap: 10px; margin-top: 12px; justify-content: center;
+  }
+  .custom-count input {
+    width: 140px; padding: 12px; font-size: 18px; text-align: center;
+    border: 2px solid #d1d5db; border-radius: 10px; outline: none;
+  }
+  .custom-count input:focus { border-color: #4338ca; }
+  .custom-count button {
+    padding: 12px 20px; font-size: 16px; font-weight: 600;
+    background: #4338ca; color: #fff; border: none; border-radius: 10px; cursor: pointer;
+  }
+  .custom-count button:hover { background: #3730a3; }
+
+  /* ===== Экран примеров ===== */
+  .stats {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #eef2ff; border-radius: 12px; padding: 12px 18px;
+    margin-bottom: 16px; font-size: 15px; flex-wrap: wrap; gap: 10px;
+  }
+  .stats .item { display: flex; align-items: center; gap: 6px; }
+  .stats .item b { font-size: 20px; }
+  .stats .ok b { color: #16a34a; }
+  .stats .bad b { color: #dc2626; }
+  .stats .total b { color: #4338ca; }
+  .stats .timer b { color: #b45309; }
+  .stats .timer.warning b { color: #dc2626; animation: blink .8s infinite; }
+  @keyframes blink { 50% { opacity: .4; } }
+
+  .progress {
+    height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .example {
+    font-size: 64px; font-weight: 800; text-align: center;
+    margin: 30px 0; letter-spacing: 2px; color: #1f2937;
+  }
+  .example input {
+    width: 180px; font-size: 64px; font-weight: 800;
+    border: none; border-bottom: 4px solid #4338ca;
+    text-align: center; outline: none; color: #4338ca;
+    background: transparent;
+    padding: 0 8px;
+    -moz-appearance: textfield;
+  }
+  .example input::-webkit-outer-spin-button,
+  .example input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .example input:focus { border-color: #3730a3; }
+
+  .feedback {
+    text-align: center; font-size: 22px; font-weight: 700;
+    min-height: 60px; margin-top: 10px;
+    transition: .2s;
+  }
+  .feedback.ok { color: #16a34a; }
+  .feedback.err { color: #dc2626; }
+  .feedback .wrong-answer { font-size: 16px; color: #6b7280; font-weight: 500; display: block; margin-top: 6px; }
+
+  .example-card.ok { animation: pulseGreen .4s ease; }
+  .example-card.err { animation: shake .4s ease; }
+
+  @keyframes pulseGreen {
+    0% { background: #f0fdf4; }
+    50% { background: #dcfce7; }
+    100% { background: #fff; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* ===== Экран результата ===== */
+  .result-title {
+    text-align: center; font-size: 24px; font-weight: 700;
+    color: #374151; margin-bottom: 20px;
+  }
+  .result-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 24px;
+  }
+  .result-cell {
+    background: #f9fafb; border-radius: 14px; padding: 18px 10px;
+    text-align: center;
+  }
+  .result-cell .label { font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+  .result-cell .value { font-size: 32px; font-weight: 800; }
+  .result-cell.ok .value { color: #16a34a; }
+  .result-cell.bad .value { color: #dc2626; }
+  .result-cell.pct .value { color: #4338ca; }
+
+  .grade-box {
+    text-align: center; border-radius: 18px; padding: 28px 20px;
+    margin-bottom: 24px;
+  }
+  .grade-box .grade-label { font-size: 16px; opacity: .85; margin-bottom: 4px; }
+  .grade-box .grade-value { font-size: 96px; font-weight: 900; line-height: 1; }
+  .grade-box .grade-text { font-size: 18px; margin-top: 8px; }
+  .grade-box .grade-extra { font-size: 14px; margin-top: 6px; opacity: .85; }
+
+  .grade-2 { background: #fef2f2; color: #991b1b; }
+  .grade-3 { background: #fffbeb; color: #92400e; }
+  .grade-4 { background: #eff6ff; color: #1e40af; }
+  .grade-5 { background: #f0fdf4; color: #166534; }
+
+  .result-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .result-buttons button {
+    padding: 14px 26px; font-size: 16px; font-weight: 600;
+    border: none; border-radius: 12px; cursor: pointer;
+  }
+  #again { background: #4338ca; color: #fff; }
+  #again:hover { background: #3730a3; }
+  #change-count { background: #e5e7eb; color: #374151; }
+  #change-count:hover { background: #d1d5db; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ Экран 1: настройка ============ -->
+  <div id="screen-start">
+    <h1>✖️ Таблица умножения</h1>
+    <div class="sub">Выберите таблицу, режим и количество примеров</div>
+
+    <!-- Таблица -->
+    <div class="section-title">Таблица</div>
+    <div class="table-grid" id="table-grid">
+      <button data-table="0" class="active">Все</button>
+      <button data-table="2">на 2</button>
+      <button data-table="3">на 3</button>
+      <button data-table="4">на 4</button>
+      <button data-table="5">на 5</button>
+      <button data-table="6">на 6</button>
+      <button data-table="7">на 7</button>
+      <button data-table="8">на 8</button>
+      <button data-table="9">на 9</button>
+    </div>
+
+    <!-- Режим -->
+    <div class="section-title">Режим</div>
+    <div class="mode-row" id="mode-row">
+      <button data-mode="count" class="active">📋 По количеству</button>
+      <button data-mode="time">⏱ На время</button>
+    </div>
+    <div class="mode-hint" id="mode-hint">Будет задано выбранное количество примеров</div>
+
+    <!-- Количество (показывается только в режиме «по количеству») -->
+    <div id="count-section">
+      <div class="section-title">Количество примеров</div>
+      <div class="count-buttons">
+        <button data-count="5">5</button>
+        <button data-count="10">10</button>
+        <button data-count="15">15</button>
+        <button data-count="20">20</button>
+        <button data-count="30">30</button>
+        <button data-count="50">50</button>
+      </div>
+      <div class="custom-count">
+        <input type="number" id="custom-input" min="1" max="100" placeholder="своё число">
+        <button id="custom-start">Начать</button>
+      </div>
+    </div>
+
+    <!-- На время: кнопка старта -->
+    <div id="time-section" class="hidden">
+      <div class="section-title">Длительность</div>
+      <div class="mode-row" id="duration-row">
+        <button data-duration="30">30 секунд</button>
+        <button data-duration="60" class="active">60 секунд</button>
+      </div>
+      <div class="custom-count" style="margin-top:16px">
+        <button id="time-start" style="width:100%; padding:16px;">▶ Старт</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Экран 2: примеры ============ -->
+  <div id="screen-play" class="hidden">
+    <div class="stats">
+      <span class="item total" id="stat-progress">Пример: <b id="stat-num">1</b> / <b id="stat-total">10</b></span>
+      <span class="item timer hidden" id="timer-display">⏱ <b id="stat-time">60</b> с</span>
+      <span class="item ok">✓ <b id="stat-ok">0</b></span>
+      <span class="item bad">✗ <b id="stat-bad">0</b></span>
+    </div>
+    <div class="progress"><div id="progress-bar"></div></div>
+
+    <div class="example-card">
+      <div class="example">
+        <span id="factor-a">7</span> × <span id="factor-b">8</span> =
+        <input type="number" id="answer-input" inputmode="numeric" autocomplete="off">
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <!-- ============ Экран 3: результат ============ -->
+  <div id="screen-result" class="hidden">
+    <div class="result-title" id="result-title">Результат</div>
+
+    <div class="result-grid">
+      <div class="result-cell ok">
+        <div class="label">Верно</div>
+        <div class="value" id="res-ok">0</div>
+      </div>
+      <div class="result-cell bad">
+        <div class="label">Ошибок</div>
+        <div class="value" id="res-bad">0</div>
+      </div>
+      <div class="result-cell pct">
+        <div class="label">Процент</div>
+        <div class="value" id="res-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="grade-box" id="grade-box">
+      <div class="grade-label">Ваша оценка</div>
+      <div class="grade-value" id="grade-value">5</div>
+      <div class="grade-text" id="grade-text"></div>
+      <div class="grade-extra" id="grade-extra"></div>
+    </div>
+
+    <div class="result-buttons">
+      <button id="again">Пройти ещё раз</button>
+      <button id="change-count">Изменить настройки</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---------- Настройки, выбранные пользователем ----------
+const settings = {
+  table: 0,           // 0 = все, иначе 2..9
+  mode: 'count',      // 'count' | 'time'
+  duration: 60,       // секунды (для режима на время)
+  count: 10,          // для режима по количеству
+};
+
+// ---------- Состояние текущей сессии ----------
+const state = {
+  total: 0,
+  current: 0,
+  correct: 0,
+  wrong: 0,
+  currentA: 0,
+  currentB: 0,
+  waiting: false,
+  transitionTimer: null,
+  countdownTimer: null,
+  timeLeft: 0,
+};
+
+// ---------- Ссылки ----------
+const screenStart  = document.getElementById('screen-start');
+const screenPlay   = document.getElementById('screen-play');
+const screenResult = document.getElementById('screen-result');
+
+const tableGrid   = document.getElementById('table-grid');
+const modeRow     = document.getElementById('mode-row');
+const modeHint    = document.getElementById('mode-hint');
+const countSection = document.getElementById('count-section');
+const timeSection  = document.getElementById('time-section');
+const durationRow  = document.getElementById('duration-row');
+
+const statProgress  = document.getElementById('stat-progress');
+const statNum       = document.getElementById('stat-num');
+const statTotal     = document.getElementById('stat-total');
+const statOk        = document.getElementById('stat-ok');
+const statBad       = document.getElementById('stat-bad');
+const timerDisplay  = document.getElementById('timer-display');
+const statTime      = document.getElementById('stat-time');
+const progressBar   = document.getElementById('progress-bar');
+
+const factorA     = document.getElementById('factor-a');
+const factorB     = document.getElementById('factor-b');
+const answerInput = document.getElementById('answer-input');
+const feedback    = document.getElementById('feedback');
+const exampleCard = document.querySelector('.example-card');
+
+const resultTitle = document.getElementById('result-title');
+const resOk  = document.getElementById('res-ok');
+const resBad = document.getElementById('res-bad');
+const resPct = document.getElementById('res-pct');
+const gradeBox   = document.getElementById('grade-box');
+const gradeValue = document.getElementById('grade-value');
+const gradeText  = document.getElementById('grade-text');
+const gradeExtra = document.getElementById('grade-extra');
+
+// ---------- Утилиты ----------
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function showScreen(name) {
+  screenStart.classList.toggle('hidden', name !== 'start');
+  screenPlay.classList.toggle('hidden', name !== 'play');
+  screenResult.classList.toggle('hidden', name !== 'result');
+}
+
+// Генерация множителей с учётом выбранной таблицы
+// Возвращает {a, b} — при этом если table != 0, то один из множителей равен table
+function makeExample() {
+  if (settings.table === 0) {
+    return { a: rand(1, 9), b: rand(1, 9) };
+  }
+  // Один множитель — выбранная таблица, другой — от 1 до 9
+  const t = settings.table;
+  const other = rand(1, 9);
+  // Случайно меняем порядок, чтобы примеры вида «7 × 3» и «3 × 7» встречались одинаково
+  return Math.random() < 0.5 ? { a: t, b: other } : { a: other, b: t };
+}
+
+// ---------- Выбор таблицы ----------
+tableGrid.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  settings.table = parseInt(btn.dataset.table, 10);
+  tableGrid.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+});
+
+// ---------- Выбор режима ----------
+modeRow.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  settings.mode = btn.dataset.mode;
+  modeRow.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+
+  if (settings.mode === 'count') {
+    countSection.classList.remove('hidden');
+    timeSection.classList.add('hidden');
+    modeHint.textContent = 'Будет задано выбранное количество примеров';
+  } else {
+    countSection.classList.add('hidden');
+    timeSection.classList.remove('hidden');
+    modeHint.textContent = 'Отвечайте как можно больше примеров до конца таймера';
+  }
+});
+
+// ---------- Выбор длительности ----------
+durationRow.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  settings.duration = parseInt(btn.dataset.duration, 10);
+  durationRow.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+});
+
+// ---------- Старт по количеству ----------
+document.querySelectorAll('.count-buttons button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    settings.count = parseInt(btn.dataset.count, 10);
+    startCountMode();
+  });
+});
+document.getElementById('custom-start').addEventListener('click', () => {
+  let v = parseInt(document.getElementById('custom-input').value, 10);
+  if (isNaN(v) || v < 1) { alert('Введите число от 1 до 100'); return; }
+  if (v > 100) v = 100;
+  settings.count = v;
+  startCountMode();
+});
+document.getElementById('custom-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('custom-start').click();
+});
+
+// ---------- Старт на время ----------
+document.getElementById('time-start').addEventListener('click', startTimeMode);
+
+// ---------- Запуск режима «по количеству» ----------
+function startCountMode() {
+  state.total = settings.count;
+  state.current = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.waiting = false;
+
+  statProgress.classList.remove('hidden');
+  timerDisplay.classList.add('hidden');
+  statTotal.textContent = state.total;
+  statOk.textContent = '0';
+  statBad.textContent = '0';
+
+  showScreen('play');
+  nextExample();
+}
+
+// ---------- Запуск режима «на время» ----------
+function startTimeMode() {
+  state.total = Infinity;
+  state.current = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.waiting = false;
+  state.timeLeft = settings.duration;
+
+  statProgress.classList.add('hidden');
+  timerDisplay.classList.remove('hidden');
+  timerDisplay.classList.remove('warning');
+  statTime.textContent = state.timeLeft;
+  statOk.textContent = '0';
+  statBad.textContent = '0';
+
+  showScreen('play');
+  nextExample();
+
+  // Запускаем обратный отсчёт
+  state.countdownTimer = setInterval(() => {
+    state.timeLeft--;
+    statTime.textContent = state.timeLeft;
+    if (state.timeLeft <= 10) {
+      timerDisplay.classList.add('warning');
+    }
+    if (state.timeLeft <= 0) {
+      clearInterval(state.countdownTimer);
+      state.countdownTimer = null;
+      finishSession();
+    }
+  }, 1000);
+}
+
+// ---------- Следующий пример ----------
+function nextExample() {
+  state.current++;
+
+  if (settings.mode === 'count' && state.current > state.total) {
+    finishSession();
+    return;
+  }
+
+  const ex = makeExample();
+  state.currentA = ex.a;
+  state.currentB = ex.b;
+
+  factorA.textContent = state.currentA;
+  factorB.textContent = state.currentB;
+  answerInput.value = '';
+  feedback.textContent = '';
+  feedback.className = 'feedback';
+  exampleCard.classList.remove('ok', 'err');
+
+  if (settings.mode === 'count') {
+    statNum.textContent = state.current;
+    progressBar.style.width = ((state.current - 1) / state.total * 100) + '%';
+  }
+
+  state.waiting = false;
+  answerInput.focus();
+}
+
+// ---------- Обработка ответа ----------
+function submitAnswer() {
+  if (state.waiting) return;
+  if (settings.mode === 'time' && state.timeLeft <= 0) return;
+  const raw = answerInput.value.trim();
+  if (raw === '') return;
+
+  const userAnswer = parseInt(raw, 10);
+  const correctAnswer = state.currentA * state.currentB;
+
+  if (userAnswer === correctAnswer) {
+    state.correct++;
+    statOk.textContent = state.correct;
+    feedback.textContent = '✓ Верно!';
+    feedback.className = 'feedback ok';
+    exampleCard.classList.remove('err');
+    exampleCard.classList.add('ok');
+  } else {
+    state.wrong++;
+    statBad.textContent = state.wrong;
+    feedback.innerHTML = '✗ Неверно' +
+      `<span class="wrong-answer">Правильный ответ: ${correctAnswer}</span>`;
+    feedback.className = 'feedback err';
+    exampleCard.classList.remove('ok');
+    exampleCard.classList.add('err');
+  }
+
+  state.waiting = true;
+
+  if (settings.mode === 'count') {
+    progressBar.style.width = (state.current / state.total * 100) + '%';
+  }
+
+  const delay = userAnswer === correctAnswer ? 600 : 1300;
+  state.transitionTimer = setTimeout(() => {
+    nextExample();
+  }, delay);
+}
+
+// ---------- Завершение сессии ----------
+function finishSession() {
+  // Отменяем все таймеры
+  if (state.transitionTimer) { clearTimeout(state.transitionTimer); state.transitionTimer = null; }
+  if (state.countdownTimer) { clearInterval(state.countdownTimer); state.countdownTimer = null; }
+
+  const total = state.correct + state.wrong;
+  const pct = total > 0 ? Math.round(state.correct / total * 100) : 0;
+
+  resOk.textContent = state.correct;
+  resBad.textContent = state.wrong;
+  resPct.textContent = pct + '%';
+
+  // Заголовок и дополнительная строка
+  if (settings.mode === 'time') {
+    resultTitle.textContent = 'Время вышло!';
+    gradeExtra.textContent = `За ${settings.duration} секунд решено примеров: ${total}`;
+  } else {
+    resultTitle.textContent = 'Результат';
+    gradeExtra.textContent = '';
+  }
+
+  // Оценка
+  let grade, cls, text;
+  if (pct < 50) {
+    grade = '2'; cls = 'grade-2'; text = 'Надо ещё потренироваться';
+  } else if (pct < 75) {
+    grade = '3'; cls = 'grade-3'; text = 'Неплохо, но можно лучше';
+  } else if (pct < 85) {
+    grade = '4'; cls = 'grade-4'; text = 'Хороший результат!';
+  } else {
+    grade = '5'; cls = 'grade-5'; text = 'Отличный результат!';
+  }
+
+  gradeBox.className = 'grade-box ' + cls;
+  gradeValue.textContent = grade;
+  gradeText.textContent = text;
+
+  showScreen('result');
+}
+
+// ---------- Обработчики на экране результата ----------
+document.getElementById('again').addEventListener('click', () => {
+  if (settings.mode === 'count') startCountMode();
+  else startTimeMode();
+});
+document.getElementById('change-count').addEventListener('click', () => {
+  if (state.countdownTimer) { clearInterval(state.countdownTimer); state.countdownTimer = null; }
+  if (state.transitionTimer) { clearTimeout(state.transitionTimer); state.transitionTimer = null; }
+  showScreen('start');
+});
+
+// ---------- Клавиатура ----------
+answerInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submitAnswer();
+  }
+});
+</script>
+</body>
+</html>
