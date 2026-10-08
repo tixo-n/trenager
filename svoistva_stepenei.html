@@ -137,7 +137,12 @@
   .answer input.exp-in,
   .answer input.a-exp,
   .answer input.b-exp,
-  .answer input.inner-exp,
+  .answer input.inner-exp {
+    width: 36px; padding: 2px 2px;
+    font-size: 13px;
+    margin-top: -8px;
+  }
+  /* Внешний показатель — на одном уровне с внутренним (или чуть выше) */
   .answer input.outer-exp {
     width: 36px; padding: 2px 2px;
     font-size: 13px;
@@ -159,6 +164,14 @@
     line-height: 1; padding: 0 2px;
     align-self: center;
     padding-bottom: 6px;
+  }
+
+  /* Специально для ответа invPow: внешний показатель стоит на уровне внутреннего */
+  .answer .outer-field .inputs {
+    align-items: flex-start;
+  }
+  .answer .outer-field input.outer-exp {
+    margin-top: -8px;
   }
 
   .task.ok   { background: #f0fdf4; border-color: #86efac; }
@@ -462,17 +475,17 @@ function powHTML(base, innerExp, outerExp) {
 }
 
 // ============================================================
-// Формы ввода ответа — без плейсхолдеров, с подписями
+// Формы ввода ответа
 // ============================================================
 
-// Одна степень: aᵐ — основание и показатель рядом, показатель выше
-function singlePowFieldHTML(baseCls, expCls, labelUnderBase, labelUnderExp) {
+// Одна степень: основание и показатель
+function answerSingleFieldsHTML() {
   return `<span class="field">
     <span class="inputs">
-      <input type="text" class="${baseCls}">
-      <input type="text" class="${expCls}">
+      <input type="text" class="base-in">
+      <input type="text" class="exp-in">
     </span>
-    <span class="field-label">${labelUnderBase}</span>
+    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
   </span>`;
 }
 
@@ -495,18 +508,8 @@ function answerProdFieldsHTML() {
   </span>`;
 }
 
-// Одна степень с общими подписями: основание | показатель
-function answerSingleFieldsHTML() {
-  return `<span class="field">
-    <span class="inputs">
-      <input type="text" class="base-in">
-      <input type="text" class="exp-in">
-    </span>
-    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
-  </span>`;
-}
-
-// Обратное к степени: (aᵐ)ⁿ — три поля
+// Обратное к степени: (aᵐ)ⁿ — три поля.
+// Внешний показатель стоит на одной высоте с внутренним.
 function answerInvPowFieldsHTML() {
   return `<span class="paren-inline">(</span>
   <span class="field">
@@ -517,9 +520,9 @@ function answerInvPowFieldsHTML() {
     <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
   </span>
   <span class="paren-inline">)</span>
-  <span class="field">
+  <span class="field outer-field">
     <span class="inputs">
-      <input type="text" class="outer-exp" style="margin-top:0">
+      <input type="text" class="outer-exp">
     </span>
     <span class="field-label">показатель</span>
   </span>`;
