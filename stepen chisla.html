@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: степень с натуральным показателем</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f4f6fb 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.1);
+  }
+
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .sub b { color: #b91c1c; }
+
+  .section-title {
+    font-size: 14px; font-weight: 700; color: #4338ca;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin: 20px 0 10px;
+  }
+  .kind-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .kind-grid button {
+    padding: 22px 16px;
+    font-size: 17px; font-weight: 700;
+    background: #f9fafb; color: #374151;
+    border: 2px solid #e5e7eb; border-radius: 14px;
+    cursor: pointer; transition: .15s;
+    text-align: center; line-height: 1.4;
+  }
+  .kind-grid button small {
+    display: block; font-size: 13px; font-weight: 500;
+    color: #6b7280; margin-top: 4px;
+  }
+  .kind-grid button:hover {
+    border-color: #a5b4fc; background: #eef2ff;
+  }
+  .kind-grid button.active {
+    background: #4338ca; color: #fff; border-color: #4338ca;
+  }
+  .kind-grid button.active small { color: #c7d2fe; }
+
+  .start-row { display: flex; justify-content: center; margin-top: 24px; }
+  #start-btn {
+    padding: 16px 40px; font-size: 17px; font-weight: 700;
+    background: #4338ca; color: #fff; border: none; border-radius: 12px;
+    cursor: pointer;
+  }
+  #start-btn:hover { background: #3730a3; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #eef2ff; border-radius: 12px; padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+  .topbar .counter { font-size: 15px; color: #4338ca; font-weight: 600; }
+  .topbar .counter b { font-size: 18px; }
+  .progress {
+    flex: 1; min-width: 120px;
+    height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+  .kind-badge {
+    font-size: 12px; font-weight: 700; color: #4338ca;
+    background: #e0e7ff; border-radius: 8px; padding: 4px 10px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num {
+    font-weight: 700; color: #9ca3af; min-width: 26px; font-size: 15px;
+  }
+  .task .expr {
+    display: flex; align-items: flex-start; gap: 4px;
+    font-size: 18px; font-weight: 600;
+  }
+  .pow-bracket {
+    display: inline-flex; align-items: center;
+    font-size: 26px; font-weight: 400; color: #374151; line-height: 1;
+    padding: 2px 5px;
+  }
+  .pow-bracket.left  { padding-right: 0; }
+  .pow-bracket.right { padding-left: 0; }
+  .pow-exp {
+    font-size: 14px; font-weight: 700; color: #4338ca;
+    margin-top: -6px; margin-left: 1px;
+  }
+
+  .frac {
+    display: inline-flex; flex-direction: column; align-items: center;
+    vertical-align: middle; line-height: 1.05; font-size: 17px;
+    margin: 0 2px;
+  }
+  .frac .top { padding: 0 4px; }
+  .frac .bot { padding: 0 4px; border-top: 2px solid #1f2937; }
+  .minus { font-weight: 700; margin-right: 1px; }
+
+  .answer-int input,
+  .answer-dec input {
+    width: 150px; padding: 10px 12px; font-size: 18px; font-weight: 700;
+    border: 2px solid #d1d5db; border-radius: 10px; outline: none;
+    text-align: center; color: #4338ca;
+  }
+  .answer-int input:focus,
+  .answer-dec input:focus { border-color: #4338ca; }
+
+  /* Для обыкновенных дробей: знак перед дробью + числитель/знаменатель */
+  .answer-frac-wrap {
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .sign-select {
+    width: 44px; padding: 6px 4px; font-size: 15px; text-align: center;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    background: #fff; color: #4338ca; font-weight: 700;
+    cursor: pointer;
+  }
+  .sign-select:focus { border-color: #4338ca; }
+
+  .answer-frac {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .answer-frac input {
+    width: 80px; padding: 6px 8px; font-size: 15px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    text-align: center;
+  }
+  .answer-frac input:focus { border-color: #4338ca; }
+  .answer-frac .line { width: 68px; height: 2px; background: #9ca3af; }
+
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task.warn { background: #fffbeb; border-color: #fcd34d; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .warn .mark { color: #d97706; }
+
+  .task .answer { font-size: 13px; color: #6b7280; margin-left: auto; }
+  .task .answer .frac { font-size: 13px; }
+  .task .answer .frac .bot { border-top-width: 1px; }
+  .task .hint {
+    flex-basis: 100%;
+    font-size: 13px; font-weight: 600; color: #b45309; margin: 4px 0 0 38px;
+  }
+  .task.err .hint { color: #b91c1c; font-weight: 500; }
+
+  .btns {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 22px; position: sticky; bottom: 0;
+    background: #fff; padding-top: 12px;
+  }
+  button {
+    padding: 13px 22px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+  }
+  #check { background: #4338ca; color: #fff; flex: 1; min-width: 160px; }
+  #check:hover { background: #3730a3; }
+  #reset { background: #e5e7eb; color: #374151; }
+  #reset:hover { background: #d1d5db; }
+  #change-kind { background: #e5e7eb; color: #374151; }
+  #change-kind:hover { background: #d1d5db; }
+
+  .result {
+    margin-top: 16px; padding: 14px 18px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+  .result.bad  { background: #fef2f2; color: #991b1b; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔢 Степень с натуральным показателем</h1>
+  <div class="sub">
+    Возведите число в степень. Показатель — не больше 4.
+  </div>
+
+  <div id="screen-start">
+    <div class="section-title">Вид основания</div>
+    <div class="kind-grid" id="kind-grid">
+      <button data-kind="int" class="active">
+        🔵 Целые
+        <small>ответ — целое число</small>
+      </button>
+      <button data-kind="dec">
+        🟣 Десятичные дроби
+        <small>0,1 … 1,9 · показатель ≤ 4</small>
+      </button>
+      <button data-kind="frac">
+        🟢 Обыкновенные дроби
+        <small>ответ — знак + числитель и знаменатель</small>
+      </button>
+    </div>
+
+    <div class="start-row">
+      <button id="start-btn">Начать тренажёр</button>
+    </div>
+  </div>
+
+  <div id="screen-play" class="hidden">
+    <div class="topbar">
+      <span class="counter">Выполнено: <b id="done">0</b> / <b id="total">20</b></span>
+      <div class="progress"><div id="pbar"></div></div>
+      <span class="counter" id="status" style="color:#6b7280">— не проверено —</span>
+      <span class="kind-badge" id="kind-badge">Целые</span>
+    </div>
+
+    <div id="tasks"></div>
+
+    <div class="result" id="result"></div>
+
+    <div class="btns">
+      <button id="check">Проверить</button>
+      <button id="reset">Новый набор</button>
+      <button id="change-kind">Сменить вид</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Утилиты ----------
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b ? gcd(b, a % b) : a; }
+function makeFraction(n, d) {
+  if (d < 0) { n = -n; d = -d; }
+  if (n === 0) return { n: 0, d: 1 };
+  const g = gcd(n, d) || 1;
+  return { n: n / g, d: d / g };
+}
+function isReduced(f) { return gcd(f.n, f.d) === 1; }
+function power(base, exp) {
+  return makeFraction(Math.pow(base.n, exp), Math.pow(base.d, exp));
+}
+
+function decimalFromFraction(f) {
+  let dd = f.d, k = 0;
+  while (dd % 2 === 0) { dd /= 2; k++; }
+  while (dd % 5 === 0) { dd /= 5; k++; }
+  if (dd !== 1) return null;
+  const numer = f.n * Math.pow(10, k) / f.d;
+  if (!Number.isInteger(numer)) return null;
+  let s = String(Math.abs(numer));
+  if (k > 0) {
+    while (s.length <= k) s = '0' + s;
+    s = s.slice(0, s.length - k) + '.' + s.slice(s.length - k);
+    s = s.replace(/\.?0+$/, '');
+    if (s === '') s = '0';
+  }
+  if (f.n < 0) s = '-' + s;
+  return s;
+}
+
+function parseDecimal(str) {
+  const neg = str.startsWith('-');
+  let s = neg ? str.slice(1) : str;
+  let [intPart, fracPart = ''] = s.split('.');
+  if (intPart === '') intPart = '0';
+  const denom = Math.pow(10, fracPart.length);
+  let numer = parseInt(intPart + fracPart, 10);
+  if (neg) numer = -numer;
+  return makeFraction(numer, denom);
+}
+
+function textFromTenths(k) {
+  const sign = k < 0 ? '-' : '';
+  const abs = Math.abs(k);
+  const intPart = Math.floor(abs / 10);
+  const tenth = abs % 10;
+  return sign + intPart + ',' + tenth;
+}
+
+// ---------- Настройки ----------
+const settings = { kind: 'int' };
+const KIND_LABEL = { int: 'Целые', dec: 'Десятичные', frac: 'Обыкновенные дроби' };
+const TASK_COUNT = 20;
+
+// ---------- Генераторы ----------
+
+// --- Целые: показатель ≤ 4 ---
+function makeIntTask() {
+  const variants = [];
+  for (let i = 0; i < 40; i++) {
+    let base = rand(2, 10);
+    if (Math.random() < 0.5) base = -base;
+    const exp = rand(2, 4);
+    const n = Math.pow(base, exp);
+    if (n === 0 || n === 1 || n === -1) continue;
+    if (Math.abs(n) > 100000) continue;
+    variants.push({ kind: 'int', base: { n: base, d: 1 }, exp });
+  }
+  variants.push({ kind: 'int', base: { n: -7, d: 1 }, exp: 1 });
+  variants.push({ kind: 'int', base: { n: 5, d: 1 }, exp: 1 });
+  variants.push({ kind: 'int', base: { n: 9, d: 1 }, exp: 0 });
+  variants.push({ kind: 'int', base: { n: -4, d: 1 }, exp: 0 });
+  return pick(variants);
+}
+
+// --- Десятичные: целая часть 0 или 1, показатель ≤ 4 ---
+function makeDecTask() {
+  const variants = [];
+  const bases = [];
+  for (let intPart = 0; intPart <= 1; intPart++) {
+    for (let tenth = 1; tenth <= 9; tenth++) {
+      bases.push(intPart * 10 + tenth);
+    }
+  }
+  for (let attempt = 0; attempt < 500; attempt++) {
+    const k = pick(bases);
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    const baseFrac = makeFraction(sign * k, 10);
+    const exp = rand(2, 4);
+    const ans = power(baseFrac, exp);
+
+    const text = decimalFromFraction(ans);
+    if (text === null) continue;
+    if (ans.n === 0) continue;
+    if (ans.n === 1 && ans.d === 1) continue;
+    if (ans.n === -1 && ans.d === 1) continue;
+    if (Math.abs(ans.n) > 200000 || ans.d > 200000) continue;
+
+    const baseText = textFromTenths(sign * k);
+    variants.push({ kind: 'dec', base: baseFrac, baseText, exp, answerText: text });
+  }
+  variants.push({ kind: 'dec', base: makeFraction(-3, 10), baseText: '-0,3', exp: 2, answerText: '0.09' });
+  variants.push({ kind: 'dec', base: makeFraction(5, 10), baseText: '0,5', exp: 3, answerText: '0.125' });
+  variants.push({ kind: 'dec', base: makeFraction(-2, 10), baseText: '-0,2', exp: 2, answerText: '0.04' });
+  variants.push({ kind: 'dec', base: makeFraction(15, 10), baseText: '1,5', exp: 2, answerText: '2.25' });
+  return pick(variants);
+}
+
+// --- Обыкновенные дроби: показатель ≤ 4 ---
+function makeFracTask() {
+  const variants = [];
+  for (let i = 0; i < 200; i++) {
+    const d = rand(2, 9);
+    let n = rand(1, d - 1);
+    if (Math.random() < 0.4) n = rand(d + 1, 9);
+    if (Math.abs(n) > 9) continue;
+    if (gcd(n, d) !== 1) continue;
+    if (Math.random() < 0.5) n = -n;
+    const exp = rand(2, 4);
+    const ans = power({ n, d }, exp);
+    if (ans.n === 0) continue;
+    if (Math.abs(ans.n) > 20000 || ans.d > 20000) continue;
+    variants.push({ kind: 'frac', base: { n, d }, exp, answer: ans });
+  }
+  variants.push({ kind: 'frac', base: { n: 3, d: 5 }, exp: 1, answer: { n: 3, d: 5 } });
+  variants.push({ kind: 'frac', base: { n: -4, d: 7 }, exp: 0, answer: { n: 1, d: 1 } });
+  return pick(variants);
+}
+
+function buildSet() {
+  const set = [];
+  for (let i = 0; i < TASK_COUNT; i++) {
+    if (settings.kind === 'int')  set.push(makeIntTask());
+    if (settings.kind === 'dec')  set.push(makeDecTask());
+    if (settings.kind === 'frac') set.push(makeFracTask());
+  }
+  return set;
+}
+
+function computeAnswer(t) {
+  return power(t.base, t.exp);
+}
+
+// ---------- Отрисовка ----------
+function fracHTML(n, d, cls = '') {
+  return `<span class="frac ${cls}"><span class="top">${n}</span><span class="bot">${d}</span></span>`;
+}
+
+function renderBase(t) {
+  if (t.kind === 'int') return `<span>${t.base.n}</span>`;
+  if (t.kind === 'dec') return `<span>${t.baseText.replace('-', '−')}</span>`;
+  const sign = t.base.n < 0 ? '<span class="minus">−</span>' : '';
+  return sign + fracHTML(Math.abs(t.base.n), t.base.d);
+}
+
+function renderExpression(t) {
+  return `<span class="pow-bracket left">(</span>` +
+         renderBase(t) +
+         `<span class="pow-bracket right">)</span>` +
+         `<span class="pow-exp">${t.exp}</span>`;
+}
+
+// Правильный ответ обыкновенной дроби в виде «− a/b» или «a/b» (без плюса)
+function answerFracHTML(f) {
+  if (f.d === 1) return `<span>${f.n}</span>`;
+  const sign = f.n < 0 ? '<span class="minus">−</span>' : '';
+  return sign + fracHTML(Math.abs(f.n), f.d);
+}
+
+// Форма ввода зависит от вида
+function inputHTML(kind) {
+  if (kind === 'int') {
+    return `<span class="answer-int">
+      <input type="text" class="int-in" inputmode="numeric" placeholder="ответ">
+    </span>`;
+  }
+  if (kind === 'dec') {
+    return `<span class="answer-dec">
+      <input type="text" class="dec-in" inputmode="decimal" placeholder="например, 0,25">
+    </span>`;
+  }
+  // Обыкновенная дробь: знак + числитель/знаменатель
+  return `<span class="answer-frac-wrap">
+    <select class="sign-select" aria-label="Знак">
+      <option value="+" selected></option>
+      <option value="-">−</option>
+    </select>
+    <span class="answer-frac">
+      <input type="text" class="num-in" inputmode="numeric" placeholder="числ.">
+      <span class="line"></span>
+      <input type="text" class="den-in" inputmode="numeric" placeholder="знам.">
+    </span>
+  </span>`;
+}
+
+// ---------- Интерфейс ----------
+const screenStart = document.getElementById('screen-start');
+const screenPlay  = document.getElementById('screen-play');
+const kindGrid    = document.getElementById('kind-grid');
+const startBtn    = document.getElementById('start-btn');
+
+const tasksEl   = document.getElementById('tasks');
+const doneEl    = document.getElementById('done');
+const totalEl   = document.getElementById('total');
+const pbar      = document.getElementById('pbar');
+const statusEl  = document.getElementById('status');
+const kindBadge = document.getElementById('kind-badge');
+const resultEl  = document.getElementById('result');
+
+const checkBtn   = document.getElementById('check');
+const resetBtn   = document.getElementById('reset');
+const changeKind = document.getElementById('change-kind');
+
+let state = [];
+
+kindGrid.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  settings.kind = btn.dataset.kind;
+  kindGrid.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+});
+
+startBtn.addEventListener('click', () => {
+  screenStart.classList.add('hidden');
+  screenPlay.classList.remove('hidden');
+  build();
+});
+
+changeKind.addEventListener('click', () => {
+  screenPlay.classList.add('hidden');
+  screenStart.classList.remove('hidden');
+});
+
+function build() {
+  const set = buildSet();
+  state = set.map(t => ({ ...t, answer: computeAnswer(t) }));
+
+  kindBadge.textContent = KIND_LABEL[settings.kind];
+
+  tasksEl.innerHTML = '';
+  state.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">${renderExpression(t)}</span>
+      <span style="font-size:20px;font-weight:600">=</span>
+      ${inputHTML(t.kind)}
+      <span class="mark"></span>
+      <span class="answer"></span>
+      <span class="hint"></span>
+    `;
+    tasksEl.appendChild(div);
+  });
+
+  doneEl.textContent = '0';
+  totalEl.textContent = state.length;
+  pbar.style.width = '0%';
+  statusEl.textContent = '— не проверено —';
+  statusEl.style.color = '#6b7280';
+  resultEl.className = 'result';
+  resultEl.textContent = '';
+
+  tasksEl.querySelectorAll('input, select').forEach(inp => {
+    inp.addEventListener('input', updateProgress);
+    inp.addEventListener('change', updateProgress);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        focusNext(inp);
+      }
+    });
+  });
+}
+
+function focusNext(current) {
+  const all = [...tasksEl.querySelectorAll('input')];
+  const idx = all.indexOf(current);
+  for (let i = idx + 1; i < all.length; i++) {
+    if (all[i].value.trim() === '') {
+      all[i].focus();
+      return;
+    }
+  }
+  checkAll();
+}
+
+// ---------- Чтение ответа ----------
+function readUserAnswer(div, kind) {
+  if (kind === 'int') {
+    const raw = div.querySelector('.int-in').value.trim().replace(',', '.');
+    if (raw === '') return null;
+    if (!/^-?\d+$/.test(raw)) return { error: 'int-not-integer' };
+    return { kind: 'int', value: parseInt(raw, 10) };
+  }
+  if (kind === 'dec') {
+    const raw = div.querySelector('.dec-in').value.trim().replace(',', '.');
+    if (raw === '') return null;
+    if (!/^-?\d+([.]\d+)?$/.test(raw)) return { error: 'dec-not-number' };
+    return { kind: 'dec', frac: parseDecimal(raw) };
+  }
+  // frac: знак + числитель / знаменатель
+  const signSel = div.querySelector('.sign-select');
+  const nRaw = div.querySelector('.num-in').value.trim();
+  const dRaw = div.querySelector('.den-in').value.trim();
+  if (nRaw === '' || dRaw === '') return null;
+  if (!/^\d+$/.test(nRaw) || !/^\d+$/.test(dRaw)) return { error: 'frac-bad' };
+  let nn = parseInt(nRaw, 10);
+  const dd = parseInt(dRaw, 10);
+  if (dd === 0) return { error: 'frac-zero-denom' };
+  const sign = signSel.value === '-' ? -1 : 1;
+  nn = sign * nn;
+  return { kind: 'frac', frac: { n: nn, d: dd } };
+}
+
+function isEqualValue(a, b) { return a.n * b.d === b.n * a.d; }
+
+function evaluate(ua, ans, kind) {
+  if (!ua) return 'empty';
+  if (ua.error) return 'format';
+  if (kind === 'int') {
+    if (ua.value !== ans.n / ans.d) return 'wrong-value';
+    return 'ok';
+  }
+  if (!isEqualValue(ua.frac, ans)) return 'wrong-value';
+  if (!isReduced(ua.frac)) return 'not-reduced';
+  return 'ok';
+}
+
+function updateProgress() {
+  let filled = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const ua = readUserAnswer(div, state[i].kind);
+    if (ua && !ua.error) filled++;
+  });
+  doneEl.textContent = filled;
+  pbar.style.width = (filled / state.length * 100) + '%';
+  statusEl.textContent = '— не проверено —';
+  statusEl.style.color = '#6b7280';
+}
+
+function checkAll() {
+  let correct = 0, notReduced = 0, formatErrors = 0, filled = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.answer');
+    const hintEl = div.querySelector('.hint');
+    div.classList.remove('ok', 'err', 'warn');
+
+    const t = state[i];
+    const ua = readUserAnswer(div, t.kind);
+    const res = evaluate(ua, t.answer, t.kind);
+
+    if (res === 'empty') {
+      mark.textContent = ''; ansEl.textContent = ''; hintEl.textContent = '';
+      return;
+    }
+    if (res === 'format') {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.textContent = '';
+      hintEl.textContent = ua.error === 'int-not-integer'
+        ? 'Ответ должен быть целым числом.'
+        : (ua.error === 'dec-not-number'
+            ? 'Введите десятичную дробь, например 0,25'
+            : (ua.error === 'frac-zero-denom'
+                ? 'Знаменатель не может быть нулём.'
+                : 'Проверьте формат ввода.'));
+      formatErrors++;
+      return;
+    }
+    filled++;
+
+    if (res === 'ok') {
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+      hintEl.textContent = '';
+      correct++;
+    } else if (res === 'not-reduced') {
+      div.classList.add('warn');
+      mark.textContent = '⚠';
+      ansEl.textContent = '';
+      hintEl.textContent = '⚠ Значение верное, но записано не в несократимом виде — упростите.';
+      notReduced++;
+    } else {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      if (t.kind === 'int') {
+        ansEl.innerHTML = 'ответ: <b>' + t.answer.n + '</b>';
+      } else if (t.kind === 'dec') {
+        const decText = decimalFromFraction(t.answer) ?? '—';
+        ansEl.innerHTML = 'ответ: <b>' + decText.replace('.', ',').replace('-', '−') + '</b>';
+      } else {
+        ansEl.innerHTML = 'ответ: ' + answerFracHTML(t.answer);
+      }
+      hintEl.textContent = '';
+    }
+  });
+
+  doneEl.textContent = filled + formatErrors;
+  pbar.style.width = (filled / state.length * 100) + '%';
+
+  const wrong = filled - correct - notReduced;
+
+  if (correct === state.length) {
+    statusEl.textContent = '🎉 всё верно!';
+    statusEl.style.color = '#16a34a';
+  } else {
+    statusEl.textContent = `верно: ${correct} · ошибок: ${wrong}` +
+      (notReduced > 0 ? ` · упростить: ${notReduced}` : '') +
+      (formatErrors > 0 ? ` · формат: ${formatErrors}` : '');
+    statusEl.style.color = '#4338ca';
+  }
+
+  const ratio = state.length > 0 ? correct / state.length : 0;
+  resultEl.className = 'result show ' + (
+    correct === state.length ? 'good'
+    : (ratio >= 0.75 ? 'warn' : 'bad')
+  );
+  resultEl.textContent = correct === state.length
+    ? 'Отлично! Все примеры решены верно.'
+    : `Верных: ${correct} из ${state.length}. Исправьте помеченные ✗ и нажмите «Проверить» снова.`;
+}
+
+checkBtn.addEventListener('click', checkAll);
+resetBtn.addEventListener('click', build);
+</script>
+</body>
+</html>
