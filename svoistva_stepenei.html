@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: свойства степеней</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f4f6fb 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.1);
+  }
+
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+
+  .section-title {
+    font-size: 14px; font-weight: 700; color: #4338ca;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin: 8px 0 10px;
+  }
+  .topic-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .topic-grid button {
+    padding: 18px 16px;
+    font-size: 15px; font-weight: 700;
+    background: #f9fafb; color: #374151;
+    border: 2px solid #e5e7eb; border-radius: 14px;
+    cursor: pointer; transition: .15s;
+    text-align: left; line-height: 1.4;
+  }
+  .topic-grid button small {
+    display: block; font-size: 12.5px; font-weight: 500;
+    color: #6b7280; margin-top: 4px;
+  }
+  .topic-grid button:hover {
+    border-color: #a5b4fc; background: #eef2ff;
+  }
+  .topic-grid button.active {
+    background: #4338ca; color: #fff; border-color: #4338ca;
+  }
+  .topic-grid button.active small { color: #c7d2fe; }
+  .topic-emoji { font-size: 20px; margin-right: 4px; }
+
+  .start-row { display: flex; justify-content: center; margin-top: 24px; }
+  #start-btn {
+    padding: 16px 40px; font-size: 17px; font-weight: 700;
+    background: #4338ca; color: #fff; border: none; border-radius: 12px;
+    cursor: pointer;
+  }
+  #start-btn:hover { background: #3730a3; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #eef2ff; border-radius: 12px; padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+  .topbar .counter { font-size: 15px; color: #4338ca; font-weight: 600; }
+  .topbar .counter b { font-size: 18px; }
+  .progress {
+    flex: 1; min-width: 120px;
+    height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+  .topic-badge {
+    font-size: 12px; font-weight: 700; color: #4338ca;
+    background: #e0e7ff; border-radius: 8px; padding: 4px 10px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 14px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num {
+    font-weight: 700; color: #9ca3af; min-width: 26px; font-size: 15px;
+  }
+  .task .expr {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 18px; font-weight: 600; flex-wrap: wrap;
+  }
+
+  .pw { display: inline-flex; align-items: flex-start; line-height: 1; }
+  .pw .base { font-size: 20px; font-weight: 600; }
+  .pw .exp {
+    font-size: 13px; font-weight: 700; color: #4338ca;
+    margin-left: 1px; margin-top: -4px;
+  }
+
+  .paren {
+    font-size: 26px; font-weight: 400; color: #374151;
+    line-height: 1; padding: 0 2px;
+  }
+
+  /* ===== Поля ответа ===== */
+  .answer {
+    display: inline-flex; align-items: flex-end; gap: 10px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: #f9fafb;
+    border: 2px dashed #c7d2fe;
+  }
+  .answer .field {
+    display: inline-flex; flex-direction: column; align-items: center;
+    gap: 4px;
+  }
+  .answer .field .inputs {
+    display: inline-flex; align-items: flex-start; gap: 1px;
+  }
+  .answer input {
+    border: none; outline: none; background: transparent;
+    color: #4338ca; font-family: inherit; font-weight: 700;
+    text-align: center;
+    border-bottom: 1px dashed #c7d2fe;
+  }
+  .answer input.base-in,
+  .answer input.a-base,
+  .answer input.b-base {
+    width: 50px; padding: 2px 4px;
+    font-size: 20px;
+  }
+  .answer input.exp-in,
+  .answer input.a-exp,
+  .answer input.b-exp,
+  .answer input.inner-exp,
+  .answer input.outer-exp {
+    width: 36px; padding: 2px 2px;
+    font-size: 13px;
+    margin-top: -8px;
+  }
+  .answer input:focus { border-bottom-color: #4338ca; }
+  .answer .sep {
+    align-self: center; font-size: 20px; font-weight: 700;
+    color: #9ca3af;
+    margin: 0 2px; padding-bottom: 6px;
+  }
+  .answer .field-label {
+    font-size: 10.5px; color: #9ca3af; font-weight: 600;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+  .answer .paren-inline {
+    font-size: 26px; font-weight: 400; color: #374151;
+    line-height: 1; padding: 0 2px;
+    align-self: center;
+    padding-bottom: 6px;
+  }
+
+  .task.ok   { background: #f0fdf4; border-color: #86efac; }
+  .task.err  { background: #fef2f2; border-color: #fca5a5; }
+  .task.warn { background: #fffbeb; border-color: #fcd34d; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .warn .mark { color: #d97706; }
+
+  .task .correct-answer { font-size: 13px; color: #6b7280; margin-left: auto; }
+  .task .correct-answer .pw .base { font-size: 16px; }
+  .task .correct-answer .pw .exp { font-size: 11px; }
+  .task .hint {
+    flex-basis: 100%;
+    font-size: 13px; font-weight: 600; color: #b45309; margin: 4px 0 0 38px;
+  }
+  .task.err .hint { color: #b91c1c; font-weight: 500; }
+
+  .btns {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 22px; position: sticky; bottom: 0;
+    background: #fff; padding-top: 12px;
+  }
+  button {
+    padding: 13px 22px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+  }
+  #check { background: #4338ca; color: #fff; flex: 1; min-width: 160px; }
+  #check:hover { background: #3730a3; }
+  #reset { background: #e5e7eb; color: #374151; }
+  #reset:hover { background: #d1d5db; }
+  #change-topic { background: #e5e7eb; color: #374151; }
+  #change-topic:hover { background: #d1d5db; }
+
+  .result {
+    margin-top: 16px; padding: 14px 18px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+  .result.bad  { background: #fef2f2; color: #991b1b; }
+
+  .hidden { display: none !important; }
+
+  .howto {
+    background: #f0f9ff; border-left: 4px solid #0ea5e9;
+    padding: 12px 16px; border-radius: 8px;
+    font-size: 13px; color: #0c4a6e; margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .howto b { color: #0369a1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⚡ Свойства степеней</h1>
+  <div class="sub">Выберите раздел и решите 20 примеров.</div>
+
+  <!-- ============ Экран выбора раздела ============ -->
+  <div id="screen-start">
+    <div class="section-title">Прямые свойства</div>
+    <div class="topic-grid" id="topic-grid">
+      <button data-topic="mul" class="active">
+        <span class="topic-emoji">✖️</span> Умножение степеней
+        <small>aᵐ · aⁿ = aᵐ⁺ⁿ</small>
+      </button>
+      <button data-topic="div">
+        <span class="topic-emoji">➗</span> Деление степеней
+        <small>aᵐ : aⁿ = aᵐ⁻ⁿ</small>
+      </button>
+      <button data-topic="prod">
+        <span class="topic-emoji">📦</span> Возведение произведения
+        <small>(ab)ⁿ = aⁿ · bⁿ</small>
+      </button>
+      <button data-topic="pow">
+        <span class="topic-emoji">🎯</span> Возведение степени в степень
+        <small>(aᵐ)ⁿ = aᵐ·ⁿ</small>
+      </button>
+    </div>
+
+    <div class="section-title" style="margin-top:22px">Комбинированные разделы</div>
+    <div class="topic-grid" id="topic-grid2">
+      <button data-topic="invProd">
+        <span class="topic-emoji">🔄</span> Обратное: aⁿ · bⁿ → (ab)ⁿ
+        <small>свёртывание произведения степеней</small>
+      </button>
+      <button data-topic="invPow">
+        <span class="topic-emoji">🔁</span> Обратное: (aᵐ)ⁿ → aᵐ·ⁿ (свёртка)
+        <small>перемножение показателей</small>
+      </button>
+      <button data-topic="all">
+        <span class="topic-emoji">🌈</span> Все свойства
+        <small>прямые + обратные + смешанные основания</small>
+      </button>
+    </div>
+
+    <div class="start-row">
+      <button id="start-btn">Начать тренажёр</button>
+    </div>
+  </div>
+
+  <!-- ============ Экран примеров ============ -->
+  <div id="screen-play" class="hidden">
+    <div class="topbar">
+      <span class="counter">Выполнено: <b id="done">0</b> / <b id="total">20</b></span>
+      <div class="progress"><div id="pbar"></div></div>
+      <span class="counter" id="status" style="color:#6b7280">— не проверено —</span>
+      <span class="topic-badge" id="topic-badge">Умножение</span>
+    </div>
+
+    <div class="howto" id="howto">
+      <b>Как записывать ответ:</b> введите <b>основание</b> и <b>показатель</b> степени.
+    </div>
+
+    <div id="tasks"></div>
+
+    <div class="result" id="result"></div>
+
+    <div class="btns">
+      <button id="check">Проверить</button>
+      <button id="reset">Новый набор</button>
+      <button id="change-topic">Сменить раздел</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Утилиты
+// ============================================================
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ============================================================
+// Настройки
+// ============================================================
+const settings = { topic: 'mul' };
+const TOPIC_LABEL = {
+  mul:     'Умножение',
+  div:     'Деление',
+  prod:    'Произведение',
+  pow:     'Степень в степень',
+  invProd: 'Обратное: aⁿ·bⁿ',
+  invPow:  'Обратное: (aᵐ)ⁿ',
+  all:     'Все свойства',
+};
+const TASK_COUNT = 20;
+
+// ============================================================
+// Основания
+// ============================================================
+const LETTERS = ['a', 'b', 'c', 'x', 'y', 'm', 'n', 'k'];
+const NUMBERS = [2, 3, 4, 5, 6, 7];
+
+function randomBase(avoid) {
+  for (let i = 0; i < 30; i++) {
+    const b = Math.random() < 0.55 ? pick(LETTERS) : pick(NUMBERS);
+    if (String(b) !== String(avoid)) return b;
+  }
+  return pick(LETTERS.filter(l => l !== avoid));
+}
+
+// ============================================================
+// Генераторы
+// ============================================================
+function makeMulTask() {
+  const base = randomBase();
+  const m = rand(2, 5);
+  const n = rand(2, 5);
+  return {
+    topic: 'mul', kind: 'mul',
+    base,
+    left:  { base, exp: m },
+    right: { base, exp: n },
+    answer: { base, exp: m + n },
+  };
+}
+
+function makeDivTask() {
+  const base = randomBase();
+  const n = rand(1, 3);
+  const m = n + rand(1, 5);
+  return {
+    topic: 'div', kind: 'div',
+    base,
+    left:  { base, exp: m },
+    right: { base, exp: n },
+    answer: { base, exp: m - n },
+  };
+}
+
+function makeProdTask() {
+  const a = randomBase();
+  const b = randomBase(a);
+  const n = rand(2, 4);
+  return {
+    topic: 'prod', kind: 'prod',
+    a, b, n,
+    answer: { a: { base: a, exp: n }, b: { base: b, exp: n } },
+  };
+}
+
+function makePowTask() {
+  const base = randomBase();
+  const m = rand(2, 4);
+  const n = rand(2, 3);
+  return {
+    topic: 'pow', kind: 'pow',
+    base,
+    innerExp: m,
+    outerExp: n,
+    answer: { base, exp: m * n },
+  };
+}
+
+function makeInvProdTask() {
+  const a = randomBase();
+  const b = randomBase(a);
+  const n = rand(2, 4);
+  const flip = Math.random() < 0.5;
+  const first  = flip ? b : a;
+  const second = flip ? a : b;
+  return {
+    topic: 'invProd', kind: 'invProd',
+    first:  { base: first,  exp: n },
+    second: { base: second, exp: n },
+    n,
+    answer: {
+      bases: flip ? [b, a] : [a, b],
+      exp: n,
+    },
+  };
+}
+
+function makeInvPowTask() {
+  const base = randomBase();
+  const m = rand(2, 4);
+  const n = rand(2, 3);
+  const total = m * n;
+  return {
+    topic: 'invPow', kind: 'invPow',
+    base,
+    totalExp: total,
+    reference: { innerExp: m, outerExp: n },
+  };
+}
+
+function makeRandomTask() {
+  const kind = pick(['mul', 'div', 'prod', 'pow', 'invProd', 'invPow']);
+  if (kind === 'mul')     return makeMulTask();
+  if (kind === 'div')     return makeDivTask();
+  if (kind === 'prod')    return makeProdTask();
+  if (kind === 'pow')     return makePowTask();
+  if (kind === 'invProd') return makeInvProdTask();
+  return makeInvPowTask();
+}
+
+function buildSet() {
+  const set = [];
+  for (let i = 0; i < TASK_COUNT; i++) {
+    if (settings.topic === 'mul')      set.push(makeMulTask());
+    else if (settings.topic === 'div') set.push(makeDivTask());
+    else if (settings.topic === 'prod')set.push(makeProdTask());
+    else if (settings.topic === 'pow') set.push(makePowTask());
+    else if (settings.topic === 'invProd') set.push(makeInvProdTask());
+    else if (settings.topic === 'invPow')  set.push(makeInvPowTask());
+    else set.push(makeRandomTask());
+  }
+  return set;
+}
+
+// ============================================================
+// Отрисовка выражений
+// ============================================================
+function pwHTML(base, exp) {
+  const needParens = String(base).includes('·');
+  const shown = needParens ? `(${base})` : base;
+  if (exp === null || exp === undefined) {
+    return `<span class="pw"><span class="base">${shown}</span></span>`;
+  }
+  return `<span class="pw"><span class="base">${shown}</span>` +
+         `<span class="exp">${exp}</span></span>`;
+}
+
+function prodHTML(a, b, n) {
+  return `<span class="paren">(</span>` +
+         pwHTML(a, null) +
+         `<span style="padding:0 2px;">·</span>` +
+         pwHTML(b, null) +
+         `<span class="paren">)</span>` +
+         `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:15px;">${n}</span></span>`;
+}
+
+function powHTML(base, innerExp, outerExp) {
+  return `<span class="paren">(</span>` +
+         pwHTML(base, innerExp) +
+         `<span class="paren">)</span>` +
+         `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:15px;">${outerExp}</span></span>`;
+}
+
+// ============================================================
+// Формы ввода ответа — без плейсхолдеров, с подписями
+// ============================================================
+
+// Одна степень: aᵐ — основание и показатель рядом, показатель выше
+function singlePowFieldHTML(baseCls, expCls, labelUnderBase, labelUnderExp) {
+  return `<span class="field">
+    <span class="inputs">
+      <input type="text" class="${baseCls}">
+      <input type="text" class="${expCls}">
+    </span>
+    <span class="field-label">${labelUnderBase}</span>
+  </span>`;
+}
+
+// Две степени: aᵐ · bⁿ
+function answerProdFieldsHTML() {
+  return `<span class="field">
+    <span class="inputs">
+      <input type="text" class="a-base">
+      <input type="text" class="a-exp">
+    </span>
+    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
+  </span>
+  <span class="sep">·</span>
+  <span class="field">
+    <span class="inputs">
+      <input type="text" class="b-base">
+      <input type="text" class="b-exp">
+    </span>
+    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
+  </span>`;
+}
+
+// Одна степень с общими подписями: основание | показатель
+function answerSingleFieldsHTML() {
+  return `<span class="field">
+    <span class="inputs">
+      <input type="text" class="base-in">
+      <input type="text" class="exp-in">
+    </span>
+    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
+  </span>`;
+}
+
+// Обратное к степени: (aᵐ)ⁿ — три поля
+function answerInvPowFieldsHTML() {
+  return `<span class="paren-inline">(</span>
+  <span class="field">
+    <span class="inputs">
+      <input type="text" class="base-in" style="width:50px">
+      <input type="text" class="inner-exp">
+    </span>
+    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
+  </span>
+  <span class="paren-inline">)</span>
+  <span class="field">
+    <span class="inputs">
+      <input type="text" class="outer-exp" style="margin-top:0">
+    </span>
+    <span class="field-label">показатель</span>
+  </span>`;
+}
+
+function renderTask(t) {
+  if (t.kind === 'mul') {
+    return pwHTML(t.left.base, t.left.exp) +
+           `<span style="font-size:20px;padding:0 4px;">·</span>` +
+           pwHTML(t.right.base, t.right.exp) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerSingleFieldsHTML()}</span>`;
+  }
+  if (t.kind === 'div') {
+    return pwHTML(t.left.base, t.left.exp) +
+           `<span style="font-size:20px;padding:0 4px;">:</span>` +
+           pwHTML(t.right.base, t.right.exp) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerSingleFieldsHTML()}</span>`;
+  }
+  if (t.kind === 'prod') {
+    return prodHTML(t.a, t.b, t.n) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerProdFieldsHTML()}</span>`;
+  }
+  if (t.kind === 'pow') {
+    return powHTML(t.base, t.innerExp, t.outerExp) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerSingleFieldsHTML()}</span>`;
+  }
+  if (t.kind === 'invProd') {
+    return pwHTML(t.first.base, t.first.exp) +
+           `<span style="font-size:20px;padding:0 4px;">·</span>` +
+           pwHTML(t.second.base, t.second.exp) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerSingleFieldsHTML()}</span>`;
+  }
+  if (t.kind === 'invPow') {
+    return pwHTML(t.base, t.totalExp) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerInvPowFieldsHTML()}</span>`;
+  }
+}
+
+// ============================================================
+// Проверка ответов
+// ============================================================
+function normalizeBase(s) {
+  return String(s).toLowerCase().replace(/\s/g, '')
+    .split('·').map(x => x.replace(/[().]/g, '')).sort().join('·');
+}
+
+function readAnswer(div, t) {
+  if (t.kind === 'mul' || t.kind === 'div' || t.kind === 'pow' || t.kind === 'invProd') {
+    const base = div.querySelector('.base-in').value.trim();
+    const exp  = div.querySelector('.exp-in').value.trim();
+    if (base === '' || exp === '') return null;
+    if (!/^-?\d+$/.test(exp)) return { error: 'bad-exp' };
+    const cleanBase = base.replace(/\s+/g, '').replace(/\*/g, '·');
+    if (!/^[a-zA-Z0-9]+(·[a-zA-Z0-9]+)?$/.test(cleanBase)) return { error: 'bad-base' };
+    return {
+      kind: 'single',
+      base: cleanBase,
+      exp: parseInt(exp, 10),
+    };
+  }
+  if (t.kind === 'prod') {
+    const aBase = div.querySelector('.a-base').value.trim();
+    const aExp  = div.querySelector('.a-exp').value.trim();
+    const bBase = div.querySelector('.b-base').value.trim();
+    const bExp  = div.querySelector('.b-exp').value.trim();
+    if (!aBase || !aExp || !bBase || !bExp) return null;
+    if (!/^-?\d+$/.test(aExp) || !/^-?\d+$/.test(bExp)) return { error: 'bad-exp' };
+    return {
+      kind: 'prod',
+      a: { base: aBase.toLowerCase(), exp: parseInt(aExp, 10) },
+      b: { base: bBase.toLowerCase(), exp: parseInt(bExp, 10) },
+    };
+  }
+  if (t.kind === 'invPow') {
+    const base = div.querySelector('.base-in').value.trim();
+    const inner = div.querySelector('.inner-exp').value.trim();
+    const outer = div.querySelector('.outer-exp').value.trim();
+    if (!base || !inner || !outer) return null;
+    if (!/^-?\d+$/.test(inner) || !/^-?\d+$/.test(outer)) return { error: 'bad-exp' };
+    return {
+      kind: 'invPow',
+      base: base.toLowerCase(),
+      innerExp: parseInt(inner, 10),
+      outerExp: parseInt(outer, 10),
+    };
+  }
+  return null;
+}
+
+function evaluate(user, t) {
+  if (!user) return 'empty';
+  if (user.error) return 'format';
+
+  if (t.kind === 'mul' || t.kind === 'div' || t.kind === 'pow') {
+    return (user.base === String(t.answer.base).toLowerCase() && user.exp === t.answer.exp)
+      ? 'ok' : 'wrong';
+  }
+
+  if (t.kind === 'prod') {
+    const c = t.answer;
+    const m1 = user.a.base === String(c.a.base).toLowerCase() && user.a.exp === c.a.exp
+            && user.b.base === String(c.b.base).toLowerCase() && user.b.exp === c.b.exp;
+    const m2 = user.a.base === String(c.b.base).toLowerCase() && user.a.exp === c.b.exp
+            && user.b.base === String(c.a.base).toLowerCase() && user.b.exp === c.a.exp;
+    return (m1 || m2) ? 'ok' : 'wrong';
+  }
+
+  if (t.kind === 'invProd') {
+    const expectedBases = t.answer.bases.map(String).map(s => s.toLowerCase());
+    const expectedSorted = [...expectedBases].sort().join('·');
+    const userSorted = normalizeBase(user.base);
+    return (userSorted === expectedSorted && user.exp === t.answer.exp) ? 'ok' : 'wrong';
+  }
+
+  if (t.kind === 'invPow') {
+    if (user.base !== String(t.base).toLowerCase()) return 'wrong';
+    return (user.innerExp * user.outerExp === t.totalExp) ? 'ok' : 'wrong';
+  }
+
+  return 'wrong';
+}
+
+function correctAnswerHTML(t) {
+  if (t.kind === 'mul' || t.kind === 'div' || t.kind === 'pow') {
+    return pwHTML(t.answer.base, t.answer.exp);
+  }
+  if (t.kind === 'prod') {
+    return pwHTML(t.answer.a.base, t.answer.a.exp) +
+           `<span style="padding:0 4px;">·</span>` +
+           pwHTML(t.answer.b.base, t.answer.b.exp);
+  }
+  if (t.kind === 'invProd') {
+    const bases = t.answer.bases.join('·');
+    return pwHTML(bases, t.answer.exp);
+  }
+  if (t.kind === 'invPow') {
+    const r = t.reference;
+    return `(${pwHTML(t.base, r.innerExp)})` +
+           `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:14px;">${r.outerExp}</span></span>`;
+  }
+  return '';
+}
+
+// ============================================================
+// Интерфейс
+// ============================================================
+const screenStart = document.getElementById('screen-start');
+const screenPlay  = document.getElementById('screen-play');
+const startBtn    = document.getElementById('start-btn');
+
+const tasksEl   = document.getElementById('tasks');
+const doneEl    = document.getElementById('done');
+const totalEl   = document.getElementById('total');
+const pbar      = document.getElementById('pbar');
+const statusEl  = document.getElementById('status');
+const topicBadge= document.getElementById('topic-badge');
+const resultEl  = document.getElementById('result');
+const howtoEl   = document.getElementById('howto');
+
+const checkBtn   = document.getElementById('check');
+const resetBtn   = document.getElementById('reset');
+const changeTopic= document.getElementById('change-topic');
+
+let state = [];
+
+['topic-grid', 'topic-grid2'].forEach(id => {
+  const grid = document.getElementById(id);
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    settings.topic = btn.dataset.topic;
+    document.querySelectorAll('#topic-grid button, #topic-grid2 button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+    });
+  });
+});
+
+startBtn.addEventListener('click', () => {
+  screenStart.classList.add('hidden');
+  screenPlay.classList.remove('hidden');
+  build();
+});
+
+changeTopic.addEventListener('click', () => {
+  screenPlay.classList.add('hidden');
+  screenStart.classList.remove('hidden');
+});
+
+function build() {
+  state = buildSet();
+
+  topicBadge.textContent = TOPIC_LABEL[settings.topic];
+
+  if (settings.topic === 'prod') {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> введите два множителя — ' +
+      'основание и показатель каждого. Порядок множителей не важен.';
+  } else if (settings.topic === 'invProd') {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> свёрните выражение в одну степень. ' +
+      'В основании укажите произведение букв, например <b>a·b</b>. Порядок букв не важен.';
+  } else if (settings.topic === 'invPow') {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> представьте степень в виде (aᵐ)ⁿ. ' +
+      'Подойдёт любая пара показателей, произведение которых равно исходному.';
+  } else {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> введите <b>основание</b> и <b>показатель</b>. ' +
+      'Основания могут быть числами или буквами.';
+  }
+
+  tasksEl.innerHTML = '';
+  state.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">${renderTask(t)}</span>
+      <span class="mark"></span>
+      <span class="correct-answer"></span>
+      <span class="hint"></span>
+    `;
+    tasksEl.appendChild(div);
+  });
+
+  doneEl.textContent = '0';
+  totalEl.textContent = state.length;
+  pbar.style.width = '0%';
+  statusEl.textContent = '— не проверено —';
+  statusEl.style.color = '#6b7280';
+  resultEl.className = 'result';
+  resultEl.textContent = '';
+
+  tasksEl.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', updateProgress);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        focusNext(inp);
+      }
+    });
+  });
+}
+
+function focusNext(current) {
+  const all = [...tasksEl.querySelectorAll('input')];
+  const idx = all.indexOf(current);
+  for (let i = idx + 1; i < all.length; i++) {
+    if (all[i].value.trim() === '') {
+      all[i].focus();
+      return;
+    }
+  }
+  checkAll();
+}
+
+function updateProgress() {
+  let filled = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const ua = readAnswer(div, state[i]);
+    if (ua && !ua.error) filled++;
+  });
+  doneEl.textContent = filled;
+  pbar.style.width = (filled / state.length * 100) + '%';
+  statusEl.textContent = '— не проверено —';
+  statusEl.style.color = '#6b7280';
+}
+
+function checkAll() {
+  let correct = 0, formatErrors = 0, filled = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.correct-answer');
+    const hintEl = div.querySelector('.hint');
+    div.classList.remove('ok', 'err', 'warn');
+
+    const t = state[i];
+    const ua = readAnswer(div, t);
+    const res = evaluate(ua, t);
+
+    if (res === 'empty') {
+      mark.textContent = ''; ansEl.textContent = ''; hintEl.textContent = '';
+      return;
+    }
+    if (res === 'format') {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.textContent = '';
+      hintEl.textContent = ua.error === 'bad-base'
+        ? 'Основание — буква, число или произведение (a·b).'
+        : 'Показатель — целое число.';
+      formatErrors++;
+      return;
+    }
+    filled++;
+
+    if (res === 'ok') {
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+      hintEl.textContent = '';
+      correct++;
+    } else {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.innerHTML = 'ответ: ' + correctAnswerHTML(t);
+      hintEl.textContent = '';
+    }
+  });
+
+  doneEl.textContent = filled + formatErrors;
+  pbar.style.width = (filled / state.length * 100) + '%';
+
+  if (correct === state.length) {
+    statusEl.textContent = '🎉 всё верно!';
+    statusEl.style.color = '#16a34a';
+  } else {
+    statusEl.textContent = `верно: ${correct} · ошибок: ${filled - correct}` +
+      (formatErrors > 0 ? ` · формат: ${formatErrors}` : '');
+    statusEl.style.color = '#4338ca';
+  }
+
+  const ratio = state.length > 0 ? correct / state.length : 0;
+  resultEl.className = 'result show ' + (
+    correct === state.length ? 'good'
+    : (ratio >= 0.75 ? 'warn' : 'bad')
+  );
+  resultEl.textContent = correct === state.length
+    ? 'Отлично! Все примеры решены верно.'
+    : `Верных: ${correct} из ${state.length}. Исправьте помеченные ✗ и нажмите «Проверить» снова.`;
+}
+
+checkBtn.addEventListener('click', checkAll);
+resetBtn.addEventListener('click', build);
+</script>
+</body>
+</html>
