@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: Проценты</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f4f6fb 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.1);
+  }
+
+  h1 { font-size: 24px; margin: 0 0 6px; text-align: center; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 24px; text-align: center; }
+
+  /* ===== Меню ===== */
+  .menu-grid {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .menu-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px;
+    background: #f9fafb; color: #374151;
+    border: 2px solid #e5e7eb; border-radius: 14px;
+    cursor: pointer; transition: .15s;
+    text-align: left;
+  }
+  .menu-btn:hover {
+    border-color: #a5b4fc; background: #eef2ff;
+    transform: translateY(-1px);
+  }
+  .menu-btn .icon {
+    font-size: 24px; line-height: 1;
+  }
+  .menu-btn .text b {
+    display: block; font-size: 16px; color: #4338ca; margin-bottom: 4px;
+  }
+  .menu-btn .text small {
+    display: block; font-size: 13px; color: #6b7280; line-height: 1.4;
+  }
+
+  /* ===== Экран настройки ===== */
+  .rule-box {
+    background: #f0fdf4; border-left: 4px solid #22c55e;
+    padding: 16px 20px; border-radius: 8px;
+    margin-bottom: 24px; color: #166534;
+    font-size: 15px; line-height: 1.5;
+  }
+  .rule-box b { color: #15803d; font-size: 16px; }
+
+  .section-title {
+    font-size: 15px; font-weight: 700; color: #4338ca;
+    margin: 20px 0 10px; text-transform: uppercase; letter-spacing: .5px;
+  }
+
+  .count-buttons {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px;
+  }
+  .count-buttons button {
+    padding: 16px 10px; font-size: 20px; font-weight: 700;
+    background: #eef2ff; color: #4338ca;
+    border: 2px solid #c7d2fe; border-radius: 12px;
+    cursor: pointer; transition: .15s;
+  }
+  .count-buttons button:hover {
+    background: #4338ca; color: #fff; border-color: #4338ca;
+  }
+
+  .back-btn {
+    background: transparent; border: none;
+    color: #6b7280; font-size: 14px; font-weight: 600;
+    cursor: pointer; padding: 0; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .back-btn:hover { color: #1f2937; }
+
+  /* ===== Экран примеров ===== */
+  .topbar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #eef2ff; border-radius: 12px; padding: 12px 16px;
+    margin-bottom: 24px;
+  }
+  .topbar .counter { font-size: 15px; color: #4338ca; font-weight: 600; }
+  .topbar .counter b { font-size: 18px; }
+  .progress {
+    flex: 1; min-width: 100px; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .example-card {
+    text-align: center; margin: 40px 0;
+  }
+  .example-text {
+    font-size: 36px; font-weight: 700; color: #1f2937;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    flex-wrap: wrap;
+    line-height: 1.4;
+  }
+  .example-text input {
+    width: 160px; font-size: 36px; font-weight: 700;
+    border: none; border-bottom: 3px solid #4338ca;
+    text-align: center; outline: none; color: #4338ca;
+    background: transparent;
+    padding: 0 8px;
+    font-family: inherit;
+  }
+  .example-text input:focus { border-color: #3730a3; }
+  
+  .feedback {
+    text-align: center; font-size: 20px; font-weight: 700;
+    min-height: 50px; margin-top: 16px;
+  }
+  .feedback.ok { color: #16a34a; }
+  .feedback.err { color: #dc2626; }
+  .feedback .hint { font-size: 16px; color: #6b7280; font-weight: 500; display: block; margin-top: 4px;}
+
+  /* ===== Экран результата ===== */
+  .result-title { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+  .result-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;
+  }
+  .result-cell {
+    background: #f9fafb; border-radius: 14px; padding: 18px 10px; text-align: center;
+  }
+  .result-cell .label { font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+  .result-cell .value { font-size: 32px; font-weight: 800; }
+  .result-cell.ok .value { color: #16a34a; }
+  .result-cell.bad .value { color: #dc2626; }
+  .result-cell.pct .value { color: #4338ca; }
+
+  .grade-box {
+    text-align: center; border-radius: 18px; padding: 28px 20px; margin-bottom: 24px;
+  }
+  .grade-box .grade-label { font-size: 16px; opacity: .85; margin-bottom: 8px; }
+  .grade-box .grade-value { font-size: 72px; font-weight: 900; line-height: 1; }
+  .grade-box .grade-text { font-size: 18px; margin-top: 8px; font-weight: 600; }
+  
+  .grade-5 { background: #f0fdf4; color: #166534; }
+  .grade-4 { background: #eff6ff; color: #1e40af; }
+  .grade-3 { background: #fffbeb; color: #92400e; }
+  .grade-2 { background: #fef2f2; color: #991b1b; }
+
+  .result-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .result-buttons button {
+    padding: 14px 26px; font-size: 16px; font-weight: 600;
+    border: none; border-radius: 12px; cursor: pointer;
+  }
+  #again { background: #4338ca; color: #fff; }
+  #again:hover { background: #3730a3; }
+  #to-menu { background: #e5e7eb; color: #374151; }
+  #to-menu:hover { background: #d1d5db; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ================= 1. ГЛАВНОЕ МЕНЮ ================= -->
+  <div id="screen-menu">
+    <h1>📈 Тренажёр: Проценты</h1>
+    <div class="sub">Выберите тему для тренировки</div>
+    <div class="menu-grid">
+      <button class="menu-btn" data-topic="to_dec">
+        <div class="icon">🔢</div>
+        <div class="text">
+          <b>1. Проценты в десятичную дробь</b>
+          <small>Правило: разделить на 100</small>
+        </div>
+      </button>
+      <button class="menu-btn" data-topic="to_pct">
+        <div class="icon">🔢</div>
+        <div class="text">
+          <b>2. Дробь в проценты</b>
+          <small>Правило: умножить на 100</small>
+        </div>
+      </button>
+      <button class="menu-btn" data-topic="find_part">
+        <div class="icon">🔍</div>
+        <div class="text">
+          <b>3. Нахождение процента от числа</b>
+          <small>Правило: число умножить на часть (дробь)</small>
+        </div>
+      </button>
+      <button class="menu-btn" data-topic="find_whole">
+        <div class="icon">💡</div>
+        <div class="text">
+          <b>4. Нахождение числа по его проценту</b>
+          <small>Правило: значение части разделить на часть (дробь)</small>
+        </div>
+      </button>
+      <button class="menu-btn" data-topic="ratio">
+        <div class="icon">⚖️</div>
+        <div class="text">
+          <b>5. Сколько процентов одно число от другого</b>
+          <small>Правило: разделить одно на другое и умножить на 100</small>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= 2. НАСТРОЙКА ================= -->
+  <div id="screen-setup" class="hidden">
+    <button class="back-btn" id="btn-back">← В меню</button>
+    <h1 id="setup-title">Настройка</h1>
+    
+    <div class="rule-box" id="setup-rule">
+      <b>Правило:</b> ...
+    </div>
+
+    <div class="section-title">Количество заданий</div>
+    <div class="count-buttons">
+      <button data-count="5">5</button>
+      <button data-count="10">10</button>
+      <button data-count="15">15</button>
+      <button data-count="20">20</button>
+    </div>
+  </div>
+
+  <!-- ================= 3. ПРОЦЕСС ================= -->
+  <div id="screen-play" class="hidden">
+    <div class="topbar">
+      <span class="counter">Пример: <b id="play-num">1</b> / <b id="play-total">10</b></span>
+      <div class="progress"><div id="play-bar"></div></div>
+      <span class="counter" style="color: #16a34a;">✓ <b id="play-ok">0</b></span>
+      <span class="counter" style="color: #dc2626;">✗ <b id="play-bad">0</b></span>
+    </div>
+
+    <div class="example-card">
+      <div class="example-text" id="play-expr">
+        <!-- пример -->
+      </div>
+      <div class="feedback" id="play-feedback"></div>
+    </div>
+  </div>
+
+  <!-- ================= 4. РЕЗУЛЬТАТ ================= -->
+  <div id="screen-result" class="hidden">
+    <div class="result-title">Результат</div>
+    
+    <div class="result-grid">
+      <div class="result-cell ok">
+        <div class="label">Верно</div>
+        <div class="value" id="res-ok">0</div>
+      </div>
+      <div class="result-cell bad">
+        <div class="label">Ошибок</div>
+        <div class="value" id="res-bad">0</div>
+      </div>
+      <div class="result-cell pct">
+        <div class="label">Процент</div>
+        <div class="value" id="res-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="grade-box" id="res-grade-box">
+      <div class="grade-label">Оценка</div>
+      <div class="grade-value" id="res-grade">5</div>
+      <div class="grade-text" id="res-text">Отлично!</div>
+    </div>
+
+    <div class="result-buttons">
+      <button id="btn-again">Ещё раз</button>
+      <button id="btn-menu">В меню</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---------- Утилиты ----------
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ---------- Глобальное состояние ----------
+const state = {
+  topic: '',
+  total: 0,
+  current: 0,
+  correct: 0,
+  wrong: 0,
+  waiting: false,
+  currentTask: null, // { exprHTML, answer, isCorrect }
+};
+
+// ---------- DOM ----------
+const scrMenu = document.getElementById('screen-menu');
+const scrSetup = document.getElementById('screen-setup');
+const scrPlay = document.getElementById('screen-play');
+const scrResult = document.getElementById('screen-result');
+
+const setupTitle = document.getElementById('setup-title');
+const setupRule = document.getElementById('setup-rule');
+
+const playNum = document.getElementById('play-num');
+const playTotal = document.getElementById('play-total');
+const playBar = document.getElementById('play-bar');
+const playOk = document.getElementById('play-ok');
+const playBad = document.getElementById('play-bad');
+const playExpr = document.getElementById('play-expr');
+const playFeedback = document.getElementById('play-feedback');
+
+function showScreen(name) {
+  scrMenu.classList.toggle('hidden', name !== 'menu');
+  scrSetup.classList.toggle('hidden', name !== 'setup');
+  scrPlay.classList.toggle('hidden', name !== 'play');
+  scrResult.classList.toggle('hidden', name !== 'result');
+}
+
+// ---------- Правила и настройки тем ----------
+const TOPICS = {
+  to_dec: {
+    title: 'Проценты → Десятичная дробь',
+    rule: '<b>Правило:</b> Чтобы представить проценты в виде десятичной дроби, нужно <b>разделить на 100</b>. (Например, 25% = 25 ÷ 100 = 0,25)'
+  },
+  to_pct: {
+    title: 'Дробь → Проценты',
+    rule: '<b>Правило:</b> Чтобы представить дробь в виде процентов, нужно <b>умножить на 100</b> и добавить знак %.'
+  },
+  find_part: {
+    title: 'Нахождение % от числа',
+    rule: '<b>Правило:</b> Чтобы найти часть (процент) от числа, нужно <b>умножить число на часть</b>, выраженную десятичной дробью. (Например, 20% от 50 = 50 · 0,2 = 10)'
+  },
+  find_whole: {
+    title: 'Нахождение числа по %',
+    rule: '<b>Правило:</b> Чтобы найти число по значению его части, нужно <b>разделить значение части на часть</b>, выраженную десятичной дробью. (Например, 20% числа равны 10, значит 10 ÷ 0,2 = 50)'
+  },
+  ratio: {
+    title: 'Сколько % одно число от другого',
+    rule: '<b>Правило:</b> Чтобы узнать, сколько процентов составляет первое число от второго, нужно <b>разделить первое на второе и умножить на 100</b>.'
+  }
+};
+
+// ---------- Обработчики меню ----------
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.topic = btn.dataset.topic;
+    openSetup();
+  });
+});
+
+function openSetup() {
+  const cfg = TOPICS[state.topic];
+  setupTitle.textContent = cfg.title;
+  setupRule.innerHTML = cfg.rule;
+  showScreen('setup');
+}
+
+document.getElementById('btn-back').onclick = () => showScreen('menu');
+
+// ---------- Запуск тренажёра ----------
+document.querySelectorAll('.count-buttons button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.total = parseInt(btn.dataset.count, 10);
+    state.current = 0;
+    state.correct = 0;
+    state.wrong = 0;
+    state.waiting = false;
+    
+    playTotal.textContent = state.total;
+    playOk.textContent = '0';
+    playBad.textContent = '0';
+    playBar.style.width = '0%';
+
+    showScreen('play');
+    nextExample();
+  });
+});
+
+// ---------- Генерация примеров ----------
+function nextExample() {
+  state.current++;
+  if (state.current > state.total) {
+    showResult();
+    return;
+  }
+
+  playNum.textContent = state.current;
+  playBar.style.width = ((state.current - 1) / state.total * 100) + '%';
+  playFeedback.innerHTML = '';
+  playFeedback.className = 'feedback';
+  state.waiting = false;
+
+  let task = {};
+
+  if (state.topic === 'to_dec') {
+    const r = Math.random();
+    let p;
+    if (r < 0.4) p = rand(1, 99);
+    else if (r < 0.5) p = 100;
+    else if (r < 0.8) p = rand(101, 300);
+    else p = rand(0, 99) + rand(1, 9) / 10;
+
+    const pStr = Number.isInteger(p) ? p : String(p).replace('.', ',');
+    task = {
+      expr: `${pStr}% = <input type="text" id="ans" autocomplete="off">`,
+      answer: p / 100,
+      isCorrect: (val) => Math.abs(parseFloat(val.replace(',', '.')) - p/100) < 0.0001
+    };
+  } 
+  else if (state.topic === 'to_pct') {
+    const r = Math.random();
+    let d;
+    if (r < 0.4) d = rand(1, 99) / 100;
+    else if (r < 0.5) d = 1;
+    else if (r < 0.8) d = rand(101, 300) / 100;
+    else d = rand(1, 999) / 1000;
+
+    const dStr = String(d).replace('.', ',');
+    task = {
+      expr: `${dStr} = <input type="text" id="ans" autocomplete="off"> %`,
+      answer: d * 100,
+      isCorrect: (val) => Math.abs(parseFloat(val.replace(',', '.')) - d*100) < 0.0001
+    };
+  }
+  else if (state.topic === 'find_part') {
+    // Находим процент от числа
+    // Ищем такие комбинации, где (число * процент / 100) дает целое или 1-2 знака после запятой
+    let num, p, ans;
+    do {
+      // Генерируем "удобный" процент
+      const percents = [5, 10, 15, 20, 25, 50, 75];
+      p = pick(percents);
+      // Число, кратное 4 или 20, чтобы результат был красивым
+      if (p === 25) num = rand(1, 40) * 4;
+      else if (p === 5 || p === 15) num = rand(1, 20) * 20;
+      else num = rand(1, 50) * 2;
+      
+      ans = num * (p / 100);
+    } while (Math.round(ans * 100) / 100 !== ans); // страховка
+
+    task = {
+      expr: `Найдите ${p}% от ${num} = <input type="text" id="ans" autocomplete="off">`,
+      answer: ans,
+      isCorrect: (val) => Math.abs(parseFloat(val.replace(',', '.')) - ans) < 0.0001
+    };
+  }
+  else if (state.topic === 'find_whole') {
+    // Находим число по проценту
+    // Чтобы ответ был целым, значение части должно делиться на процент/100
+    let p, part, ans;
+    do {
+      const percents = [10, 20, 25, 50];
+      p = pick(percents);
+      ans = rand(2, 50) * 2; // Число
+      part = ans * (p / 100);
+    } while (!Number.isInteger(part)); // часть должна быть целой для удобства
+
+    task = {
+      expr: `${p}% числа равны ${part}.<br>Найдите число: <input type="text" id="ans" autocomplete="off">`,
+      answer: ans,
+      isCorrect: (val) => Math.abs(parseFloat(val.replace(',', '.')) - ans) < 0.0001
+    };
+  }
+  else if (state.topic === 'ratio') {
+    // Сколько процентов одно число от другого
+    // Делим a на b, умножаем на 100. Чтобы ответ был целым или с 1-2 знаками.
+    let a, b, ans;
+    const percentageRatios = [
+      [1, 2], [1, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5],
+      [1, 10], [3, 10], [7, 10], [9, 10], [1, 20], [1, 25], [1, 50]
+    ];
+    do {
+      const r = pick(percentageRatios);
+      // Масштабируем дробь на случайное целое
+      const k = rand(1, 10);
+      a = r[0] * k;
+      b = r[1] * k;
+      ans = (a / b) * 100;
+    } while (Math.round(ans * 100) / 100 !== ans);
+
+    // Перемешаем: иногда "a от b", иногда "b от a" (если a < b)
+    // В задаче спрашивается "Сколько % составляет a от b"
+    // Оставим как есть.
+
+    task = {
+      expr: `Сколько % составляет ${a} от ${b}?<br>Ответ: <input type="text" id="ans" autocomplete="off"> %`,
+      answer: ans,
+      isCorrect: (val) => Math.abs(parseFloat(val.replace(',', '.')) - ans) < 0.1
+    };
+  }
+
+  state.currentTask = task;
+  playExpr.innerHTML = task.expr;
+  
+  const input = document.getElementById('ans');
+  input.focus();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      checkAnswer();
+    }
+  });
+}
+
+function checkAnswer() {
+  if (state.waiting) return;
+  const input = document.getElementById('ans');
+  const val = input.value.trim();
+  if (val === '') return;
+
+  const isOk = state.currentTask.isCorrect(val);
+
+  if (isOk) {
+    state.correct++;
+    playOk.textContent = state.correct;
+    playFeedback.innerHTML = '✓ Верно!';
+    playFeedback.className = 'feedback ok';
+  } else {
+    state.wrong++;
+    playBad.textContent = state.wrong;
+    // Форматируем правильный ответ красиво
+    let ansStr = String(Math.round(state.currentTask.answer * 1000) / 1000).replace('.', ',');
+    if (state.topic === 'ratio') ansStr = ansStr + '%';
+    playFeedback.innerHTML = `✗ Ошибка<span class="hint">Правильный ответ: ${ansStr}</span>`;
+    playFeedback.className = 'feedback err';
+  }
+
+  state.waiting = true;
+  playBar.style.width = (state.current / state.total * 100) + '%';
+
+  setTimeout(() => {
+    nextExample();
+  }, isOk ? 800 : 2000);
+}
+
+// ---------- Результаты ----------
+function showResult() {
+  const total = state.correct + state.wrong;
+  const pct = total > 0 ? Math.round(state.correct / total * 100) : 0;
+
+  document.getElementById('res-ok').textContent = state.correct;
+  document.getElementById('res-bad').textContent = state.wrong;
+  document.getElementById('res-pct').textContent = pct + '%';
+
+  const box = document.getElementById('res-grade-box');
+  const val = document.getElementById('res-grade');
+  const text = document.getElementById('res-text');
+
+  box.className = 'grade-box';
+  
+  if (pct === 100) {
+    box.classList.add('grade-5');
+    val.textContent = '5';
+    text.textContent = 'Молодец! Так держать!';
+  } else if (pct >= 80) {
+    box.classList.add('grade-5');
+    val.textContent = '5';
+    text.textContent = 'Отличная работа!';
+  } else if (pct >= 60) {
+    box.classList.add('grade-4');
+    val.textContent = '4';
+    text.textContent = 'Хорошо! Но можно лучше.';
+  } else if (pct >= 40) {
+    box.classList.add('grade-3');
+    val.textContent = '3';
+    text.textContent = 'Неплохо, но стоит ещё потренироваться.';
+  } else {
+    box.classList.add('grade-2');
+    val.textContent = '2';
+    text.textContent = 'Повтори правила и попробуй ещё раз!';
+  }
+
+  showScreen('result');
+}
+
+document.getElementById('btn-again').onclick = () => {
+  state.current = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.waiting = false;
+  playOk.textContent = '0';
+  playBad.textContent = '0';
+  playBar.style.width = '0%';
+  showScreen('play');
+  nextExample();
+};
+
+document.getElementById('btn-menu').onclick = () => {
+  showScreen('menu');
+};
+
+// Старт
+showScreen('menu');
+</script>
+</body>
+</html>
