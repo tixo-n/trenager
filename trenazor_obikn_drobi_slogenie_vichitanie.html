@@ -36,6 +36,18 @@
   }
   .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
 
+  .settings {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 18px; font-size: 14px;
+  }
+  .settings label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151; }
+  .settings select {
+    padding: 8px 10px; font-size: 14px; border: 2px solid #d1d5db;
+    border-radius: 8px; background: #fff; cursor: pointer;
+  }
+  .settings select:focus { border-color: #4338ca; outline: none; }
+
   .task {
     display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
     padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
@@ -109,8 +121,25 @@
     Ответ <b>обязательно должен быть несократимой дробью!</b>
   </div>
 
+  <div class="settings">
+    <label>Уровень:
+      <select id="level">
+        <option value="easy">Простой (знаменатели до 12)</option>
+        <option value="medium">Средний (до 50)</option>
+        <option value="hard">Сложный (до 200)</option>
+      </select>
+    </label>
+    <label>Заданий:
+      <select id="count">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="30">30</option>
+      </select>
+    </label>
+  </div>
+
   <div class="bar">
-    <span>Решено: <b id="solved">0</b> / 20</span>
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">20</span></span>
     <div class="progress"><div id="pbar"></div></div>
     <span>Верно: <b id="correct">0</b></span>
   </div>
@@ -139,6 +168,10 @@ function addF(a, b) { return makeFraction(a.n * b.d + b.n * a.d, a.d * b.d); }
 function subF(a, b) { return makeFraction(a.n * b.d - b.n * a.d, a.d * b.d); }
 function isReduced(f) { return gcd(f.n, f.d) === 1; }
 
+// ---------- Настройки уровня ----------
+// maxDen — максимальный знаменатель для генератора
+let MAX_DEN = 12;
+
 // ---------- Генерация примеров ----------
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function shuffle(a) {
@@ -157,9 +190,9 @@ function goodAnswer(ans) {
 
 function makeSimpleAdd() {
   for (let k = 0; k < 100; k++) {
-    const d1 = rand(2, 12);
-    let d2 = rand(2, 12);
-    while (d2 === d1) d2 = rand(2, 12);
+    const d1 = rand(2, MAX_DEN);
+    let d2 = rand(2, MAX_DEN);
+    while (d2 === d1) d2 = rand(2, MAX_DEN);
     const n1 = rand(1, d1 - 1);
     const n2 = rand(1, d2 - 1);
     const a = { n: n1, d: d1 };
@@ -172,9 +205,9 @@ function makeSimpleAdd() {
 
 function makeSimpleSub() {
   for (let k = 0; k < 100; k++) {
-    const d1 = rand(2, 12);
-    let d2 = rand(2, 12);
-    while (d2 === d1) d2 = rand(2, 12);
+    const d1 = rand(2, MAX_DEN);
+    let d2 = rand(2, MAX_DEN);
+    while (d2 === d1) d2 = rand(2, MAX_DEN);
     const a = { n: rand(1, d1 - 1), d: d1 };
     const b = { n: rand(1, d2 - 1), d: d2 };
     if (a.n / a.d <= b.n / b.d) continue;
@@ -186,10 +219,10 @@ function makeSimpleSub() {
 
 function makeMultipleDenom() {
   for (let k = 0; k < 100; k++) {
-    const small = rand(2, 6);
-    const mult = rand(2, 4);
+    const small = rand(2, Math.max(6, Math.floor(MAX_DEN / 3)));
+    const mult = rand(2, Math.max(4, Math.floor(MAX_DEN / small)));
     const big = small * mult;
-    if (big > 24) continue;
+    if (big > MAX_DEN) continue;
     const a = { n: rand(1, big - 1), d: big };
     const b = { n: rand(1, small - 1), d: small };
     const op = Math.random() < 0.5 ? '+' : '-';
@@ -208,7 +241,7 @@ function makeMultipleDenom() {
 function makeWithInteger() {
   for (let k = 0; k < 100; k++) {
     const whole = rand(1, 5);
-    const d = rand(2, 9);
+    const d = rand(2, Math.min(MAX_DEN, 20));
     const n = rand(1, d - 1);
     const op = Math.random() < 0.5 ? '+' : '-';
     const ans = op === '+'
@@ -221,9 +254,9 @@ function makeWithInteger() {
 
 function makeTriple() {
   for (let k = 0; k < 100; k++) {
-    const d1 = rand(2, 7);
-    let d2 = rand(2, 7); while (d2 === d1) d2 = rand(2, 7);
-    let d3 = rand(2, 7); while (d3 === d2 || d3 === d1) d3 = rand(2, 7);
+    const d1 = rand(2, MAX_DEN);
+    let d2 = rand(2, MAX_DEN); while (d2 === d1) d2 = rand(2, MAX_DEN);
+    let d3 = rand(2, MAX_DEN); while (d3 === d2 || d3 === d1) d3 = rand(2, MAX_DEN);
     const a = { n: rand(1, d1 - 1), d: d1 };
     const b = { n: rand(1, d2 - 1), d: d2 };
     const c = { n: rand(1, d3 - 1), d: d3 };
@@ -237,14 +270,25 @@ function makeTriple() {
   return { parts: [{n:1,d:2},{n:1,d:3},{n:1,d:6}], ops: ['+','+'] };
 }
 
-function buildSet() {
+function buildSet(total) {
+  // Пропорции: ~30% сложение, ~30% вычитание, ~20% кратные, ~15% с целым, ~5% тройные
   const set = [];
-  for (let i = 0; i < 6; i++) set.push({ type: 'add', data: makeSimpleAdd() });
-  for (let i = 0; i < 6; i++) set.push({ type: 'sub', data: makeSimpleSub() });
-  for (let i = 0; i < 4; i++) set.push({ type: 'mult', data: makeMultipleDenom() });
-  for (let i = 0; i < 3; i++) set.push({ type: 'int', data: makeWithInteger() });
-  for (let i = 0; i < 1; i++) set.push({ type: 'triple', data: makeTriple() });
-  return shuffle(set).slice(0, 20);
+  const nAdd    = Math.max(1, Math.round(total * 0.30));
+  const nSub    = Math.max(1, Math.round(total * 0.30));
+  const nMult   = Math.max(1, Math.round(total * 0.20));
+  const nInt    = Math.max(1, Math.round(total * 0.15));
+  let nTriple   = total - (nAdd + nSub + nMult + nInt);
+  if (nTriple < 0) nTriple = 0;
+
+  for (let i = 0; i < nAdd; i++)    set.push({ type: 'add',    data: makeSimpleAdd() });
+  for (let i = 0; i < nSub; i++)    set.push({ type: 'sub',    data: makeSimpleSub() });
+  for (let i = 0; i < nMult; i++)   set.push({ type: 'mult',   data: makeMultipleDenom() });
+  for (let i = 0; i < nInt; i++)    set.push({ type: 'int',    data: makeWithInteger() });
+  for (let i = 0; i < nTriple; i++) set.push({ type: 'triple', data: makeTriple() });
+
+  // добиваем до нужного количества, если чего-то не хватило
+  while (set.length < total) set.push({ type: 'add', data: makeSimpleAdd() });
+  return shuffle(set).slice(0, total);
 }
 
 function computeAnswer(t) {
@@ -291,16 +335,24 @@ function renderExpression(t) {
 }
 
 // ---------- Интерфейс ----------
-const tasksEl = document.getElementById('tasks');
-const solvedEl = document.getElementById('solved');
+const tasksEl   = document.getElementById('tasks');
+const solvedEl  = document.getElementById('solved');
 const correctEl = document.getElementById('correct');
-const pbar = document.getElementById('pbar');
-const resultEl = document.getElementById('result');
+const totalEl   = document.getElementById('totalCount');
+const pbar      = document.getElementById('pbar');
+const resultEl  = document.getElementById('result');
 
 let state = [];
+let totalTasks = 20;
 
 function build() {
-  const set = buildSet();
+  // читаем настройки
+  const level = document.getElementById('level').value;
+  MAX_DEN = level === 'easy' ? 12 : level === 'medium' ? 50 : 200;
+  totalTasks = parseInt(document.getElementById('count').value, 10);
+  totalEl.textContent = totalTasks;
+
+  const set = buildSet(totalTasks);
   state = set.map(t => ({ ...t, answer: computeAnswer(t) }));
 
   tasksEl.innerHTML = '';
@@ -363,18 +415,15 @@ function evaluate(ua, ans) {
   return 'ok';
 }
 
+// ВАЖНО: при вводе обновляем только "Решено" (заполненные) и прогресс-бар.
+// "Верно" здесь НЕ увеличиваем — правильность показывается только после "Проверить".
 function updateProgress() {
-  let solved = 0, correct = 0;
+  let solved = 0;
   tasksEl.querySelectorAll('.task').forEach(div => {
-    const i = +div.dataset.i;
     const ua = readUserAnswer(div);
-    if (ua) {
-      solved++;
-      if (evaluate(ua, state[i].answer) === 'ok') correct++;
-    }
+    if (ua) solved++;
   });
   solvedEl.textContent = solved;
-  correctEl.textContent = correct;
   pbar.style.width = (solved / state.length * 100) + '%';
 }
 
@@ -418,26 +467,31 @@ function checkAll() {
     }
   });
 
-  updateProgress();
+  // Вот здесь, и только здесь, обновляем счётчик "Верно"
+  correctEl.textContent = correct;
+  solvedEl.textContent = state.length; // все, у кого есть ответ, уже проверены
+  pbar.style.width = '100%';
 
-  if (correct === 20) {
+  if (correct === totalTasks) {
     resultEl.className = 'result show good';
-    resultEl.textContent = '🎉 Отлично! Все 20 примеров решены верно и дроби несократимы!';
-  } else if (correct >= 16 && notReduced === 0) {
+    resultEl.textContent = `🎉 Отлично! Все ${totalTasks} примеров решены верно и дроби несократимы!`;
+  } else if (correct >= Math.ceil(totalTasks * 0.8) && notReduced === 0) {
     resultEl.className = 'result show good';
-    resultEl.textContent = `Хороший результат: ${correct} из 20. Ошибки подсвечены — разберите их.`;
+    resultEl.textContent = `Хороший результат: ${correct} из ${totalTasks}. Ошибки подсвечены — разберите их.`;
   } else if (notReduced > 0) {
     resultEl.className = 'result show warn';
     resultEl.textContent =
-      `Верно ${correct} из 20. Ещё ${notReduced} пример(ов) с верным значением, но дробь не сокращена — они помечены ⚠. Исправьте и проверьте снова.`;
+      `Верно ${correct} из ${totalTasks}. Ещё ${notReduced} пример(ов) с верным значением, но дробь не сокращена — они помечены ⚠. Исправьте и проверьте снова.`;
   } else {
     resultEl.className = 'result show bad';
-    resultEl.textContent = `Верно ${correct} из 20. Посмотрите правильные ответы в красных строках.`;
+    resultEl.textContent = `Верно ${correct} из ${totalTasks}. Посмотрите правильные ответы в красных строках.`;
   }
 }
 
 document.getElementById('check').addEventListener('click', checkAll);
 document.getElementById('reset').addEventListener('click', build);
+document.getElementById('level').addEventListener('change', build);
+document.getElementById('count').addEventListener('change', build);
 
 build();
 </script>
