@@ -95,6 +95,15 @@
     font-size: 18px; font-weight: 600; flex-wrap: wrap;
   }
 
+  /* Дроби */
+  .frac {
+    display: inline-flex; flex-direction: column; align-items: center;
+    vertical-align: middle; line-height: 1.1; font-size: 18px;
+    margin: 0 2px;
+  }
+  .frac .top { padding: 0 4px; }
+  .frac .bot { padding: 0 4px; border-top: 2px solid #1f2937; }
+
   .pw { display: inline-flex; align-items: flex-start; line-height: 1; }
   .pw .base { font-size: 20px; font-weight: 600; }
   .pw .exp {
@@ -103,13 +112,13 @@
   }
 
   .paren {
-    font-size: 26px; font-weight: 400; color: #374151;
+    font-size: 30px; font-weight: 400; color: #374151;
     line-height: 1; padding: 0 2px;
   }
 
   /* ===== Поля ответа ===== */
   .answer {
-    display: inline-flex; align-items: flex-end; gap: 10px;
+    display: inline-flex; align-items: flex-start; gap: 16px;
     padding: 8px 14px;
     border-radius: 10px;
     background: #f9fafb;
@@ -130,17 +139,26 @@
   }
   .answer input.base-in,
   .answer input.a-base,
-  .answer input.b-base {
-    width: 50px; padding: 2px 4px;
+  .answer input.b-base,
+  .answer input.frac-top-in,
+  .answer input.frac-bot-in {
+    width: 46px; padding: 2px 4px;
     font-size: 20px;
   }
   .answer input.exp-in,
   .answer input.a-exp,
   .answer input.b-exp,
-  .answer input.inner-exp {
-    width: 36px; padding: 2px 2px;
+  .answer input.inner-exp,
+  .answer input.frac-top-exp-in,
+  .answer input.frac-bot-exp-in {
+    width: 32px; padding: 2px 2px;
     font-size: 13px;
     margin-top: -8px;
+  }
+  .answer input.outer-exp {
+    width: 36px; padding: 2px 2px;
+    font-size: 13px;
+    margin-top: -14px;
   }
   .answer input:focus { border-bottom-color: #4338ca; }
   .answer .sep {
@@ -152,32 +170,27 @@
     font-size: 10.5px; color: #9ca3af; font-weight: 600;
     letter-spacing: .3px;
     white-space: nowrap;
+    margin-top: 4px;
   }
   .answer .paren-inline {
-    font-size: 26px; font-weight: 400; color: #374151;
+    font-size: 30px; font-weight: 400; color: #374151;
     line-height: 1; padding: 0 2px;
-    align-self: center;
-    padding-bottom: 6px;
-  }
-
-  /* ===== Внешний показатель: делаем его настоящим <sup> через inline-block ===== */
-  .answer .outer-pow {
-    display: inline-flex;
-    align-items: flex-start;
     align-self: flex-start;
-    margin-top: 0;
-    padding-top: 0;
-    transform: translateY(-6px);   /* поднимаем над строкой */
+    margin-top: 0px;
   }
-  .answer .outer-pow input.outer-exp {
-    width: 36px;
-    padding: 0 2px;
-    font-size: 13px;
-    margin: 0;
-    border-bottom: 1px dashed #c7d2fe;
-    text-align: center;
+  
+  /* Ввод дроби со степенями */
+  .answer .frac-in-wrap {
+    display: inline-flex; flex-direction: column; align-items: center;
   }
-  .answer .outer-pow input.outer-exp:focus { border-bottom-color: #4338ca; }
+  .answer .frac-top-row,
+  .answer .frac-bot-row {
+    display: inline-flex; align-items: flex-start; gap: 1px;
+  }
+  .answer .frac-in-wrap .line {
+    width: 80px; height: 2px; background: #9ca3af;
+    margin: 2px 0;
+  }
 
   .task.ok   { background: #f0fdf4; border-color: #86efac; }
   .task.err  { background: #fef2f2; border-color: #fca5a5; }
@@ -190,6 +203,7 @@
   .task .correct-answer { font-size: 13px; color: #6b7280; margin-left: auto; }
   .task .correct-answer .pw .base { font-size: 16px; }
   .task .correct-answer .pw .exp { font-size: 11px; }
+  .task .correct-answer .frac { font-size: 15px; }
   .task .hint {
     flex-basis: 100%;
     font-size: 13px; font-weight: 600; color: #b45309; margin: 4px 0 0 38px;
@@ -237,7 +251,6 @@
   <h1>⚡ Свойства степеней</h1>
   <div class="sub">Выберите раздел и решите 20 примеров.</div>
 
-  <!-- ============ Экран выбора раздела ============ -->
   <div id="screen-start">
     <div class="section-title">Прямые свойства</div>
     <div class="topic-grid" id="topic-grid">
@@ -256,6 +269,10 @@
       <button data-topic="pow">
         <span class="topic-emoji">🎯</span> Возведение степени в степень
         <small>(aᵐ)ⁿ = aᵐ·ⁿ</small>
+      </button>
+      <button data-topic="frac">
+        <span class="topic-emoji">🧮</span> Степень частного
+        <small>(a/b)ⁿ = aⁿ / bⁿ</small>
       </button>
     </div>
 
@@ -280,7 +297,6 @@
     </div>
   </div>
 
-  <!-- ============ Экран примеров ============ -->
   <div id="screen-play" class="hidden">
     <div class="topbar">
       <span class="counter">Выполнено: <b id="done">0</b> / <b id="total">20</b></span>
@@ -321,6 +337,7 @@ const TOPIC_LABEL = {
   div:     'Деление',
   prod:    'Произведение',
   pow:     'Степень в степень',
+  frac:    'Частное',
   invProd: 'Обратное: aⁿ·bⁿ',
   invPow:  'Обратное: (aᵐ)ⁿ',
   all:     'Все свойства',
@@ -394,6 +411,17 @@ function makePowTask() {
   };
 }
 
+function makeFracTask() {
+  const a = randomBase();
+  const b = randomBase(a);
+  const n = rand(2, 4);
+  return {
+    topic: 'frac', kind: 'frac',
+    a, b, n,
+    answer: { top: a, bot: b, exp: n },
+  };
+}
+
 function makeInvProdTask() {
   const a = randomBase();
   const b = randomBase(a);
@@ -427,11 +455,12 @@ function makeInvPowTask() {
 }
 
 function makeRandomTask() {
-  const kind = pick(['mul', 'div', 'prod', 'pow', 'invProd', 'invPow']);
+  const kind = pick(['mul', 'div', 'prod', 'pow', 'frac', 'invProd', 'invPow']);
   if (kind === 'mul')     return makeMulTask();
   if (kind === 'div')     return makeDivTask();
   if (kind === 'prod')    return makeProdTask();
   if (kind === 'pow')     return makePowTask();
+  if (kind === 'frac')    return makeFracTask();
   if (kind === 'invProd') return makeInvProdTask();
   return makeInvPowTask();
 }
@@ -443,6 +472,7 @@ function buildSet() {
     else if (settings.topic === 'div') set.push(makeDivTask());
     else if (settings.topic === 'prod')set.push(makeProdTask());
     else if (settings.topic === 'pow') set.push(makePowTask());
+    else if (settings.topic === 'frac')set.push(makeFracTask());
     else if (settings.topic === 'invProd') set.push(makeInvProdTask());
     else if (settings.topic === 'invPow')  set.push(makeInvPowTask());
     else set.push(makeRandomTask());
@@ -454,13 +484,18 @@ function buildSet() {
 // Отрисовка выражений
 // ============================================================
 function pwHTML(base, exp) {
-  const needParens = String(base).includes('·');
-  const shown = needParens ? `(${base})` : base;
   if (exp === null || exp === undefined) {
-    return `<span class="pw"><span class="base">${shown}</span></span>`;
+    return `<span class="pw"><span class="base">${base}</span></span>`;
   }
-  return `<span class="pw"><span class="base">${shown}</span>` +
+  return `<span class="pw"><span class="base">${base}</span>` +
          `<span class="exp">${exp}</span></span>`;
+}
+
+function parenPwHTML(base, exp) {
+  return `<span class="paren">(</span>` +
+         `<span class="pw"><span class="base">${base}</span></span>` +
+         `<span class="paren">)</span>` +
+         `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:15px;">${exp}</span></span>`;
 }
 
 function prodHTML(a, b, n) {
@@ -479,22 +514,26 @@ function powHTML(base, innerExp, outerExp) {
          `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:15px;">${outerExp}</span></span>`;
 }
 
+function fracPwHTML(a, b, n) {
+  return `<span class="paren">(</span>` +
+         `<span class="frac"><span class="top">${a}</span><span class="bot">${b}</span></span>` +
+         `<span class="paren">)</span>` +
+         `<span class="pw"><span class="exp" style="margin-top:-10px;font-size:15px;">${n}</span></span>`;
+}
+
 // ============================================================
 // Формы ввода ответа
 // ============================================================
-
-// Одна степень: основание и показатель
-function answerSingleFieldsHTML() {
+function answerSingleFieldsHTML(baseHint) {
   return `<span class="field">
     <span class="inputs">
       <input type="text" class="base-in">
       <input type="text" class="exp-in">
     </span>
-    <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
+    <span class="field-label">${baseHint || 'основание · показатель'}</span>
   </span>`;
 }
 
-// Две степени: aᵐ · bⁿ
 function answerProdFieldsHTML() {
   return `<span class="field">
     <span class="inputs">
@@ -513,8 +552,6 @@ function answerProdFieldsHTML() {
   </span>`;
 }
 
-// Обратное к степени: (aᵐ)ⁿ — внешний показатель ставим сразу после скобки,
-// внутри flex-обёртки .outer-pow, которая поднимается над строкой через transform
 function answerInvPowFieldsHTML() {
   return `<span class="paren-inline">(</span>
   <span class="field">
@@ -525,8 +562,30 @@ function answerInvPowFieldsHTML() {
     <span class="field-label">основание&nbsp;·&nbsp;показатель</span>
   </span>
   <span class="paren-inline">)</span>
-  <span class="outer-pow">
-    <input type="text" class="outer-exp">
+  <span class="field">
+    <span class="inputs">
+      <input type="text" class="outer-exp">
+    </span>
+    <span class="field-label">показатель</span>
+  </span>`;
+}
+
+function answerFracFieldsHTML() {
+  return `<span class="field">
+    <span class="inputs">
+      <span class="frac-in-wrap">
+        <span class="frac-top-row">
+          <input type="text" class="frac-top-in">
+          <input type="text" class="frac-top-exp-in">
+        </span>
+        <span class="line"></span>
+        <span class="frac-bot-row">
+          <input type="text" class="frac-bot-in">
+          <input type="text" class="frac-bot-exp-in">
+        </span>
+      </span>
+    </span>
+    <span class="field-label">дробь со степенями</span>
   </span>`;
 }
 
@@ -555,6 +614,11 @@ function renderTask(t) {
            `<span style="font-size:20px;padding:0 4px;">=</span>` +
            `<span class="answer">${answerSingleFieldsHTML()}</span>`;
   }
+  if (t.kind === 'frac') {
+    return fracPwHTML(t.a, t.b, t.n) +
+           `<span style="font-size:20px;padding:0 4px;">=</span>` +
+           `<span class="answer">${answerFracFieldsHTML()}</span>`;
+  }
   if (t.kind === 'invProd') {
     return pwHTML(t.first.base, t.first.exp) +
            `<span style="font-size:20px;padding:0 4px;">·</span>` +
@@ -570,21 +634,54 @@ function renderTask(t) {
 }
 
 // ============================================================
-// Проверка ответов
+// Разбор одночлена
 // ============================================================
-function normalizeBase(s) {
-  return String(s).toLowerCase().replace(/\s/g, '')
-    .split('·').map(x => x.replace(/[().]/g, '')).sort().join('·');
+function normalizeMonomialInner(s) {
+  const t = String(s).toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/\*/g, '')
+    .replace(/·/g, '');
+  if (t === '') return null;
+  const numMatch = t.match(/^(\d+)/);
+  let coef = null;
+  let rest = t;
+  if (numMatch) {
+    coef = numMatch[1];
+    rest = t.slice(numMatch[0].length);
+  }
+  if (rest !== '' && !/^[a-z]+$/.test(rest)) return null;
+  if (rest === '' && coef === null) return null;
+  const letters = rest.split('').sort();
+  const canonical = (coef !== null ? coef : '') + letters.join('');
+  return { coef, letters, canonical };
 }
 
+function buildMonomialFromBases(bases) {
+  let coef = null;
+  const letters = [];
+  bases.forEach(b => {
+    const s = String(b).toLowerCase();
+    if (/^\d+$/.test(s)) {
+      coef = (coef === null ? 1 : coef) * parseInt(s, 10);
+    } else if (/^[a-z]+$/.test(s)) {
+      letters.push(...s.split(''));
+    }
+  });
+  letters.sort();
+  return (coef !== null ? String(coef) : '') + letters.join('');
+}
+
+// ============================================================
+// Чтение ответа
+// ============================================================
 function readAnswer(div, t) {
   if (t.kind === 'mul' || t.kind === 'div' || t.kind === 'pow' || t.kind === 'invProd') {
     const base = div.querySelector('.base-in').value.trim();
     const exp  = div.querySelector('.exp-in').value.trim();
     if (base === '' || exp === '') return null;
     if (!/^-?\d+$/.test(exp)) return { error: 'bad-exp' };
-    const cleanBase = base.replace(/\s+/g, '').replace(/\*/g, '·');
-    if (!/^[a-zA-Z0-9]+(·[a-zA-Z0-9]+)?$/.test(cleanBase)) return { error: 'bad-base' };
+    const cleanBase = base.replace(/\s+/g, '');
+    if (!/^[()a-zA-Z0-9]+$/.test(cleanBase)) return { error: 'bad-base' };
     return {
       kind: 'single',
       base: cleanBase,
@@ -604,6 +701,22 @@ function readAnswer(div, t) {
       b: { base: bBase.toLowerCase(), exp: parseInt(bExp, 10) },
     };
   }
+  if (t.kind === 'frac') {
+    const top = div.querySelector('.frac-top-in').value.trim();
+    const topExp = div.querySelector('.frac-top-exp-in').value.trim();
+    const bot = div.querySelector('.frac-bot-in').value.trim();
+    const botExp = div.querySelector('.frac-bot-exp-in').value.trim();
+    if (top === '' || topExp === '' || bot === '' || botExp === '') return null;
+    if (!/^\d+$/.test(topExp) || !/^\d+$/.test(botExp)) return { error: 'bad-exp' };
+    if (!/^[a-zA-Z0-9]+$/.test(top) || !/^[a-zA-Z0-9]+$/.test(bot)) return { error: 'bad-base' };
+    return {
+      kind: 'frac',
+      top: top.toLowerCase(),
+      topExp: parseInt(topExp, 10),
+      bot: bot.toLowerCase(),
+      botExp: parseInt(botExp, 10),
+    };
+  }
   if (t.kind === 'invPow') {
     const base = div.querySelector('.base-in').value.trim();
     const inner = div.querySelector('.inner-exp').value.trim();
@@ -620,6 +733,9 @@ function readAnswer(div, t) {
   return null;
 }
 
+// ============================================================
+// Проверка
+// ============================================================
 function evaluate(user, t) {
   if (!user) return 'empty';
   if (user.error) return 'format';
@@ -638,11 +754,32 @@ function evaluate(user, t) {
     return (m1 || m2) ? 'ok' : 'wrong';
   }
 
+  if (t.kind === 'frac') {
+    const c = t.answer;
+    const match = user.top === String(c.top).toLowerCase()
+               && user.bot === String(c.bot).toLowerCase()
+               && user.topExp === c.exp
+               && user.botExp === c.exp;
+    return match ? 'ok' : 'wrong';
+  }
+
   if (t.kind === 'invProd') {
-    const expectedBases = t.answer.bases.map(String).map(s => s.toLowerCase());
-    const expectedSorted = [...expectedBases].sort().join('·');
-    const userSorted = normalizeBase(user.base);
-    return (userSorted === expectedSorted && user.exp === t.answer.exp) ? 'ok' : 'wrong';
+    const expected = buildMonomialFromBases(t.answer.bases);
+    const raw = user.base.replace(/\s+/g, '');
+    const hasParens = /^\(.+\)$/.test(raw);
+    
+    let innerStr;
+    if (hasParens) {
+      innerStr = raw.slice(1, -1);
+    } else {
+      if (!/^\d+$/.test(raw)) return 'wrong';
+      innerStr = raw;
+    }
+    
+    const parsed = normalizeMonomialInner(innerStr);
+    if (!parsed) return 'wrong';
+    if (user.exp !== t.answer.exp) return 'wrong';
+    return parsed.canonical === expected ? 'ok' : 'wrong';
   }
 
   if (t.kind === 'invPow') {
@@ -662,9 +799,20 @@ function correctAnswerHTML(t) {
            `<span style="padding:0 4px;">·</span>` +
            pwHTML(t.answer.b.base, t.answer.b.exp);
   }
+  if (t.kind === 'frac') {
+    const c = t.answer;
+    // Отрисовка правильного ответа: a^n / b^n
+    return `<span class="frac" style="font-size:16px;">
+      <span class="top">${c.top}<sup style="font-size:10px;color:#4338ca;margin-left:1px;">${c.exp}</sup></span>
+      <span class="bot">${c.bot}<sup style="font-size:10px;color:#4338ca;margin-left:1px;">${c.exp}</sup></span>
+    </span>`;
+  }
   if (t.kind === 'invProd') {
-    const bases = t.answer.bases.join('·');
-    return pwHTML(bases, t.answer.exp);
+    const base = buildMonomialFromBases(t.answer.bases);
+    if (/^\d+$/.test(base)) {
+      return pwHTML(base, t.answer.exp);
+    }
+    return parenPwHTML(base, t.answer.exp);
   }
   if (t.kind === 'invPow') {
     const r = t.reference;
@@ -727,12 +875,19 @@ function build() {
   if (settings.topic === 'prod') {
     howtoEl.innerHTML = '<b>Как записывать ответ:</b> введите два множителя — ' +
       'основание и показатель каждого. Порядок множителей не важен.';
+  } else if (settings.topic === 'frac') {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> возведите числитель и знаменатель в степень. ' +
+      'Введите числитель, его показатель, знаменатель и его показатель.';
   } else if (settings.topic === 'invProd') {
     howtoEl.innerHTML = '<b>Как записывать ответ:</b> свёрните выражение в одну степень. ' +
-      'В основании укажите произведение букв, например <b>a·b</b>. Порядок букв не важен.';
+      'Если основание — буквы, пишите его <b>в круглых скобках</b>: <b>(ab)</b>, <b>(5a)</b>. ' +
+      'Если основание — просто число, скобки <b>не нужны</b>: <b>42</b>.';
   } else if (settings.topic === 'invPow') {
     howtoEl.innerHTML = '<b>Как записывать ответ:</b> представьте степень в виде (aᵐ)ⁿ. ' +
       'Подойдёт любая пара показателей, произведение которых равно исходному.';
+  } else if (settings.topic === 'all') {
+    howtoEl.innerHTML = '<b>Как записывать ответ:</b> форма ввода соответствует типу примера. ' +
+      'Смотрите на подписи под полями.';
   } else {
     howtoEl.innerHTML = '<b>Как записывать ответ:</b> введите <b>основание</b> и <b>показатель</b>. ' +
       'Основания могут быть числами или буквами.';
@@ -819,7 +974,7 @@ function checkAll() {
       mark.textContent = '✗';
       ansEl.textContent = '';
       hintEl.textContent = ua.error === 'bad-base'
-        ? 'Основание — буква, число или произведение (a·b).'
+        ? 'Основание — буквы и/или число.'
         : 'Показатель — целое число.';
       formatErrors++;
       return;
