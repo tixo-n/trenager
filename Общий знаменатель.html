@@ -63,8 +63,6 @@ button:hover{filter:brightness(.97);transform:translateY(-1px)}
 .step3-sign{display:inline-flex;align-items:center;justify-content:center;min-width:40px;font-size:22px;font-weight:700}
 .step3-sign input{width:46px;text-align:center;font-size:20px;padding:6px}
 @media(max-width:520px){main{padding:9px}.panel{padding:12px}.problem{gap:12px}.steps{grid-template-columns:1fr}}
-.step3-sign input{width:46px;text-align:center;font-size:20px;padding:6px}
-@media(max-width:520px){main{padding:9px}.panel{padding:12px}.problem{gap:12px}.steps{grid-template-columns:1fr}}
 
 /* кнопка возврата в главное меню */
 .back-home{
@@ -79,6 +77,7 @@ button:hover{filter:brightness(.97);transform:translateY(-1px)}
 </style>
 </head>
 <body>
+<a class="back-home" href="index.html">← В главное меню</a>
 <main>
 <h1>Дроби с разными знаменателями</h1>
 <p class="subtitle">Тренируем алгоритм с плаката: <b>найди общий знаменатель → найди дополнительные множители → приведи дроби → выполни действие → сократи ответ</b>.</p>
@@ -214,7 +213,7 @@ function renderStep3(){
  const line=$("step3Line");
  const opSymbol = task.op==="add" ? "+" : task.op==="sub" ? "−" : "";
  const signInput = task.op==="compare"
-   ? `<span class="step3-sign"><input id="stepSign" placeholder="?, <, >" aria-label="Знак сравнения"></span>`
+   ? `<span class="step3-sign"><input id="stepSign" placeholder="?, &lt;, &gt;" aria-label="Знак сравнения"></span>`
    : `<span class="step3-sign">${opSymbol}</span>`;
  line.innerHTML = `
    <span class="step3-frac">
