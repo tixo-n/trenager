@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр: дроби с разными знаменателями</title>
+<style>
+:root{--blue:#1878c9;--bluep:#e7f4ff;--green:#168653;--greenp:#e7f8ee;--pink:#d52f83;--pinkp:#fff0f7;--purple:#7653c5;--purpp:#f2edff;--ink:#17325e;--paper:#fffefa}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f6fb;color:var(--ink);font-family:Arial,sans-serif;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{text-align:center;font-size:clamp(24px,4vw,36px);margin:8px 0;color:#123e79}
+.subtitle{text-align:center;margin:0 auto 16px;max-width:760px}
+.panel{background:white;border:2px solid #c9deef;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #17325e0b}
+
+/* === Панель настроек: больше не налезает === */
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.controls > div{min-width:0}
+label{font-weight:700;display:block;margin-bottom:5px;line-height:1.25;overflow-wrap:anywhere}
+select,button,input{font:inherit;border-radius:10px;border:1.5px solid #b8cce0;padding:10px;background:white;color:var(--ink);max-width:100%}
+select{width:100%;min-width:0}
+@media(max-width:420px){.controls{grid-template-columns:1fr}}
+
+button{cursor:pointer;font-weight:700;transition:.15s}
+button:hover{filter:brightness(.97);transform:translateY(-1px)}
+.primary{background:var(--blue);color:white;border-color:var(--blue)}
+.secondary{background:#eef6ff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.problem-head{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.pill{display:inline-block;border-radius:999px;padding:5px 10px;font-weight:700;background:var(--bluep);color:#14548e}
+.task-instruction{text-align:center;margin:10px 0 0;font-size:clamp(16px,2.4vw,20px);font-weight:700;color:#123e79;background:#fff6d9;border:1.5px solid #f0d68a;border-radius:12px;padding:8px 12px;display:inline-block;width:100%}
+.problem{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;padding:20px 6px;font-size:clamp(30px,6vw,48px);font-weight:700}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;min-width:36px}
+.frac .num{padding:0 7px 3px;border-bottom:2px solid currentColor}
+.frac .den{padding:3px 7px 0}
+.operator{font-size:1em}
+.answerline{display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap}
+.answerline input{width:88px;text-align:center;font-size:20px}
+.answerline .wide{width:115px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:10px}
+.step{border-radius:14px;padding:12px;background:#f8fbff;border:1px solid #d8e7f4}
+.step h3{font-size:16px;margin:0 0 8px}
+.step input{width:100%;margin:4px 0}
+.step .hint{font-size:13px;color:#536a84}
+.field-label{display:block;font-size:13px;font-weight:700;color:#3a5474;margin:6px 0 2px}
+.feedback{border-radius:12px;padding:12px;margin-top:12px;display:none}
+.feedback.good{display:block;background:var(--greenp);border:1px solid #8bd2a9;color:#125b37}
+.feedback.bad{display:block;background:var(--pinkp);border:1px solid #f1a5ca;color:#8a1c52}
+.small{font-size:14px;color:#526985}
+.progress{height:10px;border-radius:99px;background:#e6edf5;overflow:hidden;margin-top:10px}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,#42b878,#168653);transition:width .2s}
+.hidden{display:none!important}
+.tag{font-size:13px;background:#f2edff;color:#6042a4;border-radius:8px;padding:4px 8px}
+#worked{background:#f8fbff;border-left:4px solid var(--purple);padding:12px;border-radius:8px;margin-top:12px}
+.minifrac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;vertical-align:middle}
+.minifrac .num{padding:0 5px 2px;border-bottom:2px solid currentColor}
+.minifrac .den{padding:2px 5px 0}
+.step3-full{grid-column:1/-1;border-radius:14px;padding:12px;background:#f8fbff;border:1px solid #d8e7f4}
+.step3-line{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-size:22px;font-weight:700;padding:10px 0}
+.step3-frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;min-width:60px}
+.step3-frac input{width:70px;text-align:center;padding:6px;font-size:18px;border-radius:8px}
+.step3-frac .bar{width:100%;height:0;border-top:2px solid #17325e;margin:4px 0}
+.step3-sign{display:inline-flex;align-items:center;justify-content:center;min-width:40px;font-size:22px;font-weight:700}
+.step3-sign input{width:46px;text-align:center;font-size:20px;padding:6px}
+@media(max-width:520px){main{padding:9px}.panel{padding:12px}.problem{gap:12px}.steps{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Дроби с разными знаменателями</h1>
+<p class="subtitle">Тренируем алгоритм с плаката: <b>найди общий знаменатель → найди дополнительные множители → приведи дроби → выполни действие → сократи ответ</b>.</p>
+
+<section class="panel">
+  <div class="controls">
+    <div><label for="topic">Что тренируем?</label>
+      <select id="topic"><option value="mix">Все действия вперемешку</option><option value="compare">Сравнение</option><option value="add">Сложение</option><option value="sub">Вычитание</option></select>
+    </div>
+    <div><label for="level">Уровень сложности</label>
+      <select id="level">
+        <option value="1">1. Маленькие знаменатели — простой ответ</option>
+        <option value="2">2. Знаменатели до 10 — простой ответ</option>
+        <option value="3">3. Ответ нужно сократить</option>
+        <option value="4">4. Выделяем целую часть</option>
+        <option value="5">5. Смешанные числа</option>
+        <option value="6">6. Знаменатели до 20 — всё вместе</option>
+      </select>
+    </div>
+    <div><label for="mode">Как отвечать?</label>
+      <select id="mode"><option value="steps">По шагам (рекомендуется)</option><option value="answer">Только итоговый ответ</option></select>
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" id="new">Новый пример</button>
+    <button class="secondary" id="showHint">Подсказка к алгоритму</button>
+    <span class="tag" id="count">Решено: 0</span>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+</section>
+
+<section class="panel">
+  <div class="problem-head"><span class="pill" id="stage">Уровень 1</span><span class="small" id="taskNo">Задание 1</span></div>
+  <p class="task-instruction" id="instruction">Что нужно сделать?</p>
+  <div class="problem" id="problem"></div>
+  <div id="hint" class="feedback good" style="display:none">
+    <b>Памятка:</b> какое самое маленькое число делится на оба знаменателя? Затем раздели его на каждый знаменатель — так найдёшь дополнительные множители. Умножь на них и числитель, и знаменатель каждой дроби.
+  </div>
+  <div id="stepsArea">
+    <h3>Шаги алгоритма</h3>
+    <div class="steps">
+      <div class="step">
+        <h3>1. Общий знаменатель</h3>
+        <div class="hint">Введи число, которое делится на оба знаменателя.</div>
+        <label class="field-label" for="common">Общий знаменатель</label>
+        <input id="common" inputmode="numeric" placeholder="Введи число">
+      </div>
+      <div class="step">
+        <h3>2. Дополнительные множители</h3>
+        <div class="hint">Общий знаменатель раздели на каждый исходный знаменатель.</div>
+        <label class="field-label" for="m1">Дополнительный множитель к 1-й дроби</label>
+        <input id="m1" inputmode="numeric" placeholder="Введи число">
+        <label class="field-label" for="m2">Дополнительный множитель ко 2-й дроби</label>
+        <input id="m2" inputmode="numeric" placeholder="Введи число">
+      </div>
+    </div>
+    <div class="step3-full" style="margin-top:12px">
+      <h3 style="font-size:16px;margin:0 0 6px">3. Новые дроби</h3>
+      <div class="hint" style="font-size:13px;color:#536a84">Умножь числитель и знаменатель каждой дроби на её дополнительный множитель.</div>
+      <div class="step3-line" id="step3Line"></div>
+    </div>
+  </div>
+  <div id="answerArea" style="margin-top:14px">
+    <h3 style="text-align:center">Итоговый ответ</h3>
+    <div class="answerline" id="answerInputs"></div>
+  </div>
+  <div class="row" style="justify-content:center;margin-top:14px">
+    <button class="primary" id="check">Проверить</button>
+    <button class="secondary" id="solution">Показать решение</button>
+    <button class="secondary" id="next">Следующий пример →</button>
+  </div>
+  <div id="feedback" class="feedback"></div>
+  <div id="worked" class="hidden"></div>
+</section>
+<section class="panel">
+  <h2 style="margin-top:0">Наша лестница сложности</h2>
+  <ol>
+    <li>Маленькие знаменатели: учимся находить общий знаменатель.</li>
+    <li>Знаменатели до 10: приводим дроби без лишних действий.</li>
+    <li>Сокращаем результат, когда числитель и знаменатель делятся на одно число.</li>
+    <li>Если числитель больше знаменателя — выделяем целую часть.</li>
+    <li>Добавляем смешанные числа: отдельно работаем с целой и дробной частями.</li>
+    <li>Смешанные примеры и знаменатели до 20.</li>
+  </ol>
+  <p class="small">Совет: на первых занятиях выбирай «По шагам». Пусть ребёнок освоит один шаг, прежде чем требовать весь пример сразу.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let task=null, solved=0, taskNum=0, lastShown=false;
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+function fracHTML(n,d){return `<span class="frac"><span class="num">${n}</span><span class="den">${d}</span></span>`}
+function miniFrac(n,d){return `<span class="minifrac"><span class="num">${n}</span><span class="den">${d}</span></span>`}
+function makeTask(){
+ const lev=+$("level").value, topic=$("topic").value;
+ let maxD=lev===1?5:lev===2?10:lev===3?10:lev===4?12:lev===5?12:20;
+ let mixed=lev===5 || (lev===6 && Math.random()<.55);
+ let a,b,c,d,wa=0,wb=0,op;
+ let tries=0;
+ do{
+  do{ b=rnd(2,maxD); d=rnd(2,maxD); }while(b===d);
+  a=rnd(1,b-1); c=rnd(1,d-1);
+  if(mixed){wa=rnd(1,3);wb=rnd(1,2)}
+  op=topic==="mix"?["compare","add","sub"][rnd(0,2)]:topic;
+  if(op==="sub"){
+    const A=wa*b+a, B=wb*d+c;
+    if(A/b < B/d){[a,c]=[c,a];[b,d]=[d,b];[wa,wb]=[wb,wa];}
+  }
+  tries++;
+ }while(tries<30);
+
+ const A=wa*b+a, B=wb*d+c;
+ let numerator,denominator;
+ if(op==="add"){numerator=A*d+B*b;denominator=b*d}
+ else if(op==="sub"){numerator=A*d-B*b;denominator=b*d}
+ else {numerator=0;denominator=1}
+ if(op==="compare"){
+   const sign = A*d<B*b ? "<" : A*d>B*b ? ">" : "=";
+   task={a,b,c,d,wa,wb,op,sign,left:A/b,right:B/d,common:lcm(b,d)};
+ } else {
+   let g=gcd(Math.abs(numerator),denominator); let rn=numerator/g, rd=denominator/g;
+   let whole=Math.floor(rn/rd), rem=rn%rd;
+   task={a,b,c,d,wa,wb,op,numerator,denominator,rn,rd,whole,rem,proper:rn<rd, common:lcm(b,d)};
+ }
+ taskNum++;
+ render();
+}
+function mixedHTML(w,n,d){return (w?`<span>${w}</span> `:"")+fracHTML(n,d)}
+
+function renderStep3(){
+ const line=$("step3Line");
+ const opSymbol = task.op==="add" ? "+" : task.op==="sub" ? "−" : "";
+ const signInput = task.op==="compare"
+   ? `<span class="step3-sign"><input id="stepSign" placeholder="?, <, >" aria-label="Знак сравнения"></span>`
+   : `<span class="step3-sign">${opSymbol}</span>`;
+ line.innerHTML = `
+   <span class="step3-frac">
+     <input id="nn1" inputmode="numeric" aria-label="Числитель 1-й новой дроби">
+     <span class="bar"></span>
+     <input id="nd1" inputmode="numeric" aria-label="Знаменатель 1-й новой дроби">
+   </span>
+   ${signInput}
+   <span class="step3-frac">
+     <input id="nn2" inputmode="numeric" aria-label="Числитель 2-й новой дроби">
+     <span class="bar"></span>
+     <input id="nd2" inputmode="numeric" aria-label="Знаменатель 2-й новой дроби">
+   </span>
+ `;
+}
+
+function instructionText(op){
+ if(op==="compare") return "Сравни дроби";
+ if(op==="add") return "Вычисли: сложение";
+ return "Вычисли: вычитание";
+}
+
+function render(){
+ $("stage").textContent="Уровень "+$("level").value;
+ $("taskNo").textContent="Задание "+taskNum;
+ $("instruction").textContent=instructionText(task.op);
+ let left=task.wa?mixedHTML(task.wa,task.a,task.b):fracHTML(task.a,task.b);
+ let right=task.wb?mixedHTML(task.wb,task.c,task.d):fracHTML(task.c,task.d);
+ let opSymbol=task.op==="add"?"+":task.op==="sub"?"−":"?";
+ $("problem").innerHTML=`${left}<span class="operator">${opSymbol}</span>${right}`;
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("worked").classList.add("hidden");$("worked").innerHTML="";
+ $("hint").style.display="none";lastShown=false;
+ $("stepsArea").classList.toggle("hidden",$("mode").value==="answer");
+ renderStep3();
+ $("common").value="";$("m1").value="";$("m2").value="";
+ const area=$("answerInputs");
+ if(task.op==="compare"){
+  area.innerHTML=`<input id="ansSign" class="wide" aria-label="Знак сравнения">`;
+ }else{
+  area.innerHTML=`<input id="ansWhole" inputmode="numeric" aria-label="Целая часть"><span id="fractionAnswer">${fracHTML(0,1)}</span>`;
+  $("fractionAnswer").innerHTML=`<span class="frac"><input id="ansNum" inputmode="numeric" style="width:100px;text-align:center" aria-label="Числитель"><span style="border-top:2px solid;padding:4px 12px 0;width:100%;text-align:center"><input id="ansDen" inputmode="numeric" style="width:100px;text-align:center" aria-label="Знаменатель"></span></span>`;
+ }
+}
+function val(id){return Number($(id)?.value)}
+function showFeedback(ok,msg){$("feedback").className="feedback "+(ok?"good":"bad");$("feedback").textContent=msg}
+function check(){
+ if(!task)return;
+ if($("mode").value==="steps"){
+  const common=val("common"),m1=val("m1"),m2=val("m2");
+  const nn1=val("nn1"),nd1=val("nd1"),nn2=val("nn2"),nd2=val("nd2");
+  if(!common||!m1||!m2||!nd1||!nd2||!Number.isFinite(nn1)||!Number.isFinite(nn2)){
+    showFeedback(false,"Заполни шаги алгоритма. Если множитель равен 1, тоже введи 1.");return;
+  }
+  const okCommon = common===task.common;
+  const okM = m1===task.common/task.b && m2===task.common/task.d;
+  const okNew = nn1===task.a*m1 && nn2===task.c*m2 && nd1===task.common && nd2===task.common;
+  if(!(okCommon&&okM&&okNew)){
+    showFeedback(false,"Пока не всё верно. Проверь: общий знаменатель делится на оба исходных; каждый числитель умножаем на свой множитель; в новых дробях знаменатель — общий.");return;
+  }
+  if(task.op==="compare"){
+    const s=($("stepSign").value||"").trim();
+    if(s!==task.sign){showFeedback(false,"В шаге 3 для сравнения поставь правильный знак между новыми дробями.");return}
+  }
+ }
+ if(task.op==="compare"){
+  const sign=$("ansSign").value.trim();
+  if(sign!==task.sign){showFeedback(false,"Проверь сравнение: сначала приведи дроби к одинаковому знаменателю, затем сравни числители.");return}
+ }else{
+  const w=$("ansWhole").value.trim()===""?0:Number($("ansWhole").value);
+  const n=Number($("ansNum").value),d=Number($("ansDen").value);
+  if(!d||!Number.isFinite(n)){showFeedback(false,"Введи числитель и знаменатель ответа.");return}
+  const given=w+n/d;
+  const expected=task.rn/task.rd;
+  if(Math.abs(given-expected)>1e-8){showFeedback(false,"Ответ пока неверный. Проверь сложение или вычитание числителей, затем сократи дробь. Если результат больше 1, выдели целую часть.");return}
+ }
+ solved++;$("count").textContent="Решено: "+solved;$("bar").style.width=Math.min(100,solved*5)+"%";
+ showFeedback(true,"Верно! Отличная работа. Теперь можно переходить к следующему примеру.");
+}
+function solution(){
+ if(!task)return;
+ const t=task,common=t.common||lcm(t.b,t.d),m1=common/t.b,m2=common/t.d,n1=t.a*m1,n2=t.c*m2;
+ let s=`<b>1. Общий знаменатель:</b> ${common}, потому что ${common} делится на ${t.b} и на ${t.d}.<br>`;
+ s+=`<b>2. Дополнительные множители:</b> к 1-й дроби ${common} : ${t.b} = ${m1}; ко 2-й ${common} : ${t.d} = ${m2}.<br>`;
+ s+=`<b>3. Приводим дроби:</b> ${miniFrac(t.a,t.b)} = ${miniFrac(n1,common)}; ${miniFrac(t.c,t.d)} = ${miniFrac(n2,common)}.<br>`;
+ if(t.op==="compare"){
+  s+=`<b>4. Сравниваем:</b> ${n1} ${t.sign} ${n2}, значит ${t.sign==="="? "дроби равны":`знак ${t.sign}`} .`;
+ }else{
+  const nn=t.op==="add"?n1+n2:n1-n2;
+  const wholeRaw=t.op==="add"?(t.wa||0)+(t.wb||0):(t.wa||0)-(t.wb||0);
+  let top=nn, whole=wholeRaw;
+  if(t.op==="sub" && top<0){whole-=1;top+=common;}
+  if(top>=common){whole+=Math.floor(top/common);top=top%common;}
+  s+=`<b>4. Выполняем действие:</b> ${n1} ${t.op==="add"?"+":"−"} ${n2} = ${nn}, дробная часть до сокращения: ${miniFrac(nn,common)}.`;
+  if(t.wa||t.wb) s+=` Целые части: ${t.wa||0} ${t.op==="add"?"+":"−"} ${t.wb||0} = ${wholeRaw}.`;
+  s+='<br>';
+  let g=gcd(Math.abs(top),common),rn=top/g,rd=common/g;
+  s+=`<b>5. Сокращаем:</b> ${miniFrac(top,common)}`+(g>1?` = ${miniFrac(rn,rd)} (делим числитель и знаменатель на ${g})`:` — дробь не сокращается`)+`. `;
+  if(whole>0){s+=`<br><b>6. Выделяем целую часть:</b> ответ ${whole}${rn?` ${miniFrac(rn,rd)}`:""}.`;}
+  else if(rn>=rd){s+=`<br><b>6. Выделяем целую часть:</b> ${rn} : ${rd} = ${Math.floor(rn/rd)} ост. ${rn%rd}; ответ ${Math.floor(rn/rd)} ${rn%rd?miniFrac(rn%rd,rd):""}.`;}
+  else s+=`<br><b>Ответ:</b> ${miniFrac(rn,rd)}.`;
+ }
+ $("worked").innerHTML=s;$("worked").classList.remove("hidden");lastShown=true;
+}
+$("new").addEventListener("click",makeTask);$("next").addEventListener("click",makeTask);
+$("check").addEventListener("click",check);$("solution").addEventListener("click",solution);
+$("showHint").addEventListener("click",()=>{$("hint").style.display=$("hint").style.display==="none"?"block":"none"});
+$("mode").addEventListener("change",()=>{if(task)render()});
+$("level").addEventListener("change",()=>{taskNum=0;makeTask()});
+$("topic").addEventListener("change",()=>{taskNum=0;makeTask()});
+makeTask();
+</script>
+</body>
+</html>
