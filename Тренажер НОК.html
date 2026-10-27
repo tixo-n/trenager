@@ -74,9 +74,55 @@
   .result.show { display: block; }
   .result.good { background: #f0fdf4; color: #166534; }
   .result.bad { background: #fef2f2; color: #991b1b; }
+/* кнопка возврата в главное меню */
+.back-home{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  background:#fff;
+  color:#1878c9;
+  border:1.5px solid #1878c9;
+  border-radius:10px;
+  text-decoration:none;
+  box-shadow:0 3px 10px rgba(23,50,94,.12);
+  cursor:pointer;
+  transition:.15s;
+}
+.back-home svg{
+  width:20px;
+  height:20px;
+  display:block;
+}
+.back-home:hover{
+  background:#1878c9;
+  color:#fff;
+  transform:translateY(-1px);
+}
+.back-home:focus-visible{
+  outline:2px solid #1878c9;
+  outline-offset:2px;
+}
+@media(max-width:520px){
+  .back-home{top:8px;right:8px;width:34px;height:34px}
+  .back-home svg{width:18px;height:18px}
+}
 </style>
 </head>
 <body>
+ <a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
 <div class="container">
   <h1>🔗 Тренажёр: наименьшее общее кратное (НОК)</h1>
   <div class="sub">
