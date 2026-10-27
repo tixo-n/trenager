@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: умножение и деление дробей</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .sub b { color: #b91c1c; }
+
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .settings {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 18px; font-size: 14px;
+  }
+  .settings label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151; }
+  .settings select {
+    padding: 8px 10px; font-size: 14px; border: 2px solid #d1d5db;
+    border-radius: 8px; background: #fff; cursor: pointer;
+  }
+  .settings select:focus { border-color: #4338ca; outline: none; }
+
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr {
+    font-size: 18px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+
+  .frac {
+    display: inline-flex; flex-direction: column; align-items: center;
+    vertical-align: middle; line-height: 1.05; font-size: 16px;
+    margin: 0 2px;
+  }
+  .frac .top { padding: 0 4px; }
+  .frac .bot { padding: 0 4px; border-top: 2px solid #1f2937; }
+  .op { font-size: 18px; margin: 0 2px; }
+
+  .task input {
+    width: 70px; padding: 6px 8px; font-size: 15px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    text-align: center;
+  }
+  .task input:focus { border-color: #4338ca; }
+  .task .frac-in { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+  .task .frac-in .line { width: 60px; height: 2px; background: #9ca3af; }
+
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task.warn { background: #fffbeb; border-color: #fcd34d; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .warn .mark { color: #d97706; }
+
+  .task .answer { font-size: 13px; color: #6b7280; margin-left: auto; }
+  .task .answer .frac { font-size: 13px; }
+  .task .answer .frac .bot { border-top-width: 1px; }
+  .task .hint {
+    flex-basis: 100%;
+    font-size: 14px; font-weight: 600; color: #b45309; margin: 4px 0 0 36px;
+  }
+  .task.err .hint { color: #b91c1c; font-weight: 500; }
+
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+  }
+  #check { background: #4338ca; color: #fff; }
+  #check:hover { background: #3730a3; }
+  #reset { background: #e5e7eb; color: #374151; }
+  #reset:hover { background: #d1d5db; }
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+
+  .stats {
+    margin-top: 10px; font-size: 15px; line-height: 1.6;
+  }
+  .stats b { font-weight: 700; }
+  .grade {
+    display: inline-block; margin-top: 10px; padding: 6px 14px;
+    border-radius: 999px; font-weight: 800; font-size: 20px;
+  }
+  .grade.g5 { background: #dcfce7; color: #166534; }
+  .grade.g4 { background: #dbeafe; color: #1e40af; }
+  .grade.g3 { background: #fef3c7; color: #92400e; }
+  .grade.g2 { background: #fee2e2; color: #991b1b; }
+
+/* кнопка возврата в главное меню */
+.back-home{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  background:#fff;
+  color:#1878c9;
+  border:1.5px solid #1878c9;
+  border-radius:10px;
+  text-decoration:none;
+  box-shadow:0 3px 10px rgba(23,50,94,.12);
+  cursor:pointer;
+  transition:.15s;
+}
+.back-home svg{
+  width:20px;
+  height:20px;
+  display:block;
+}
+.back-home:hover{
+  background:#1878c9;
+  color:#fff;
+  transform:translateY(-1px);
+}
+.back-home:focus-visible{
+  outline:2px solid #1878c9;
+  outline-offset:2px;
+}
+@media(max-width:520px){
+  .back-home{top:8px;right:8px;width:34px;height:34px}
+  .back-home svg{width:18px;height:18px}
+}
+</style>
+</head>
+<body>
+ <a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
+<div class="container">
+  <h1>✖️➗ Тренажёр: умножение и деление дробей</h1>
+  <div class="sub">
+    Ответ вводите как <b>числитель</b> и <b>знаменатель</b>.
+    Ответ <b>обязательно должен быть несократимой дробью!</b>
+    Если в ответе получается целое число, запишите его со знаменателем <b>1</b>.
+  </div>
+
+  <div class="settings">
+    <label>Режим:
+      <select id="mode">
+        <option value="mul">Умножение</option>
+        <option value="div">Деление</option>
+        <option value="mixed" selected>Вразнобой</option>
+      </select>
+    </label>
+    <label>Уровень:
+      <select id="level">
+        <option value="easy">Простой (знаменатели до 12)</option>
+        <option value="medium" selected>Средний (до 30)</option>
+        <option value="hard">Сложный (до 100)</option>
+      </select>
+    </label>
+    <label>Заданий:
+      <select id="count">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="30">30</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">20</span></span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <div id="tasks"></div>
+
+  <div class="btns">
+    <button id="check">Проверить</button>
+    <button id="reset">Пройти заново</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// ---------- Математика дробей ----------
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b ? gcd(b, a % b) : a; }
+
+function makeFraction(n, d) {
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(n, d) || 1;
+  return { n: n / g, d: d / g };
+}
+
+function mulF(a, b) { return makeFraction(a.n * b.n, a.d * b.d); }
+function divF(a, b) { return makeFraction(a.n * b.d, a.d * b.n); }
+function isReduced(f) { return gcd(f.n, f.d) === 1; }
+function isEqualValue(a, b) { return a.n * b.d === b.n * a.d; }
+
+// ---------- Настройки уровня ----------
+let MAX_DEN = 30;
+
+// ---------- Генерация примеров ----------
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Допустимый ответ: положительный, не целый (знаменатель > 1)
+function goodAnswer(ans) {
+  return ans.d !== 1 && ans.n > 0;
+}
+
+function makeMul() {
+  for (let k = 0; k < 200; k++) {
+    const d1 = rand(2, MAX_DEN);
+    let d2 = rand(2, MAX_DEN);
+    // иногда одинаковые знаменатели — это нормально для умножения
+    const n1 = rand(1, d1 - 1);
+    const n2 = rand(1, d2 - 1);
+    const a = { n: n1, d: d1 };
+    const b = { n: n2, d: d2 };
+    const ans = mulF(a, b);
+    if (goodAnswer(ans)) return { a, b, op: '·' };
+  }
+  return { a: { n: 1, d: 2 }, b: { n: 2, d: 3 }, op: '·' };
+}
+
+function makeDiv() {
+  for (let k = 0; k < 300; k++) {
+    const d1 = rand(2, MAX_DEN);
+    const d2 = rand(2, MAX_DEN);
+    const n1 = rand(1, d1 - 1);
+    const n2 = rand(1, d2 - 1);
+    const a = { n: n1, d: d1 };
+    const b = { n: n2, d: d2 };
+    const ans = divF(a, b);
+    if (goodAnswer(ans)) return { a, b, op: ':' };
+  }
+  return { a: { n: 1, d: 2 }, b: { n: 1, d: 3 }, op: ':' };
+}
+
+// Умножение/деление дроби на целое число (целое — это дробь со знаменателем 1)
+function makeWithInteger() {
+  for (let k = 0; k < 200; k++) {
+    const whole = rand(2, 9);
+    const d = rand(2, Math.min(MAX_DEN, 15));
+    const n = rand(1, d - 1);
+    const frac = { n, d };
+    const op = Math.random() < 0.5 ? '·' : ':';
+    const ans = op === '·'
+      ? mulF({ n: whole, d: 1 }, frac)
+      : divF({ n: whole, d: 1 }, frac);
+    if (goodAnswer(ans)) return { int: whole, a: frac, op };
+  }
+  return { int: 3, a: { n: 1, d: 2 }, op: '·' };
+}
+
+// Деление дроби на целое и целого на дробь — оба варианта
+function makeIntegerDiv() {
+  for (let k = 0; k < 200; k++) {
+    const whole = rand(2, 9);
+    const d = rand(2, Math.min(MAX_DEN, 15));
+    const n = rand(1, d - 1);
+    const frac = { n, d };
+    // frac : whole
+    const ans = divF(frac, { n: whole, d: 1 });
+    if (goodAnswer(ans)) return { a: frac, b: { n: whole, d: 1 }, op: ':' };
+  }
+  return { a: { n: 3, d: 4 }, b: { n: 2, d: 1 }, op: ':' };
+}
+
+function computeAnswer(t) {
+  if (t.type === 'int') {
+    const w = t.data.int;
+    return t.data.op === '·'
+      ? mulF({ n: w, d: 1 }, t.data.a)
+      : divF({ n: w, d: 1 }, t.data.a);
+  }
+  return t.data.op === '·'
+    ? mulF(t.data.a, t.data.b)
+    : divF(t.data.a, t.data.b);
+}
+
+// ---------- Сборка набора ----------
+function buildSet(total, mode) {
+  const set = [];
+  const add = (type, data) => set.push({ type, data });
+
+  if (mode === 'mul') {
+    // 70% обычное умножение, 20% с целым, 10% дробь на дробь с одинаковыми знаменателями
+    const nInt = Math.max(1, Math.round(total * 0.2));
+    const nPlain = total - nInt;
+    for (let i = 0; i < nPlain; i++) add('mul', makeMul());
+    for (let i = 0; i < nInt; i++) add('int', makeWithInteger());
+  } else if (mode === 'div') {
+    // 60% обычное деление, 20% с целым, 20% деление с целым числом (дробь:целое / целое:дробь)
+    const nInt = Math.max(1, Math.round(total * 0.2));
+    const nIntDiv = Math.max(1, Math.round(total * 0.2));
+    const nPlain = Math.max(1, total - nInt - nIntDiv);
+    for (let i = 0; i < nPlain; i++) add('div', makeDiv());
+    for (let i = 0; i < nInt; i++) add('int', makeWithInteger());
+    for (let i = 0; i < nIntDiv; i++) add('intdiv', makeIntegerDiv());
+  } else {
+    // вразнобой: примерно поровну умножения и деления, с вкраплением целых
+    const half = Math.floor(total / 2);
+    for (let i = 0; i < half; i++) add('mul', makeMul());
+    for (let i = 0; i < total - half; i++) add('div', makeDiv());
+    // добавим несколько примеров с целыми, заменив часть обычных
+    const nInt = Math.max(1, Math.round(total * 0.2));
+    for (let i = 0; i < nInt; i++) {
+      const idx = rand(0, set.length - 1);
+      set[idx] = { type: 'int', data: makeWithInteger() };
+    }
+    const nIntDiv = Math.max(1, Math.round(total * 0.1));
+    for (let i = 0; i < nIntDiv; i++) {
+      const idx = rand(0, set.length - 1);
+      set[idx] = { type: 'intdiv', data: makeIntegerDiv() };
+    }
+  }
+
+  while (set.length < total) {
+    set.push({ type: mode === 'div' ? 'div' : 'mul', data: mode === 'div' ? makeDiv() : makeMul() });
+  }
+  return shuffle(set).slice(0, total);
+}
+
+// ---------- Отрисовка ----------
+function fracHTML(n, d, cls = '') {
+  return `<span class="frac ${cls}"><span class="top">${n}</span><span class="bot">${d}</span></span>`;
+}
+
+function renderExpression(t) {
+  if (t.type === 'int') {
+    return `<span>${t.data.int}</span><span class="op">${t.data.op}</span>` +
+           fracHTML(t.data.a.n, t.data.a.d);
+  }
+  return fracHTML(t.data.a.n, t.data.a.d) +
+         `<span class="op">${t.data.op}</span>` +
+         fracHTML(t.data.b.n, t.data.b.d);
+}
+
+// ---------- Интерфейс ----------
+const tasksEl   = document.getElementById('tasks');
+const solvedEl  = document.getElementById('solved');
+const correctEl = document.getElementById('correct');
+const totalEl   = document.getElementById('totalCount');
+const pbar      = document.getElementById('pbar');
+const resultEl  = document.getElementById('result');
+
+let state = [];
+let totalTasks = 20;
+
+function build() {
+  const mode = document.getElementById('mode').value;
+  const level = document.getElementById('level').value;
+  MAX_DEN = level === 'easy' ? 12 : level === 'medium' ? 30 : 100;
+  totalTasks = parseInt(document.getElementById('count').value, 10);
+  totalEl.textContent = totalTasks;
+
+  const set = buildSet(totalTasks, mode);
+  state = set.map(t => ({ ...t, answer: computeAnswer(t) }));
+
+  tasksEl.innerHTML = '';
+  state.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">${renderExpression(t)}</span>
+      <span class="op">=</span>
+      <span class="frac-in">
+        <input type="number" class="num-in" inputmode="numeric" placeholder="числ.">
+        <span class="line"></span>
+        <input type="number" class="den-in" inputmode="numeric" placeholder="знам.">
+      </span>
+      <span class="mark"></span>
+      <span class="answer"></span>
+      <span class="hint"></span>
+    `;
+    tasksEl.appendChild(div);
+  });
+
+  solvedEl.textContent = '0';
+  correctEl.textContent = '0';
+  pbar.style.width = '0%';
+  resultEl.className = 'result';
+  resultEl.innerHTML = '';
+
+  tasksEl.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', updateProgress);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkAll();
+    });
+  });
+}
+
+function readUserAnswer(div) {
+  const n = div.querySelector('.num-in').value.trim();
+  const d = div.querySelector('.den-in').value.trim();
+  if (n === '' || d === '') return null;
+  const nn = parseInt(n, 10);
+  const dd = parseInt(d, 10);
+  if (isNaN(nn) || isNaN(dd) || dd === 0) return null;
+  return { n: nn, d: dd };
+}
+
+// Статус ответа:
+// 'empty' — не заполнено
+// 'ok' — верно и несократимо
+// 'not-reduced' — значение верное, но дробь сократима
+// 'wrong-value' — значение неверное
+function evaluate(ua, ans) {
+  if (!ua) return 'empty';
+  if (!isEqualValue(ua, ans)) return 'wrong-value';
+  if (!isReduced(ua)) return 'not-reduced';
+  return 'ok';
+}
+
+function updateProgress() {
+  let solved = 0;
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    if (readUserAnswer(div)) solved++;
+  });
+  solvedEl.textContent = solved;
+  pbar.style.width = (solved / state.length * 100) + '%';
+}
+
+// Оценка: 5 — всё верно; 4 — ≥80% верно и нет сократимых; 3 — ≥50% верно; 2 — иначе
+function getGrade(correct, notReduced, total) {
+  if (correct === total) return 5;
+  if (correct >= Math.ceil(total * 0.8) && notReduced === 0) return 4;
+  if (correct >= Math.ceil(total * 0.5)) return 3;
+  return 2;
+}
+
+function checkAll() {
+  let correct = 0, notReduced = 0, wrong = 0, empty = 0;
+
+  tasksEl.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.answer');
+    const hintEl = div.querySelector('.hint');
+    div.classList.remove('ok', 'err', 'warn');
+
+    const ua = readUserAnswer(div);
+    const res = evaluate(ua, state[i].answer);
+
+    if (res === 'empty') {
+      mark.textContent = '';
+      ansEl.textContent = '';
+      hintEl.textContent = '';
+      empty++;
+      return;
+    }
+
+    if (res === 'ok') {
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+      hintEl.textContent = '';
+      correct++;
+    } else if (res === 'not-reduced') {
+      div.classList.add('warn');
+      mark.textContent = '⚠';
+      ansEl.textContent = '';
+      hintEl.textContent = '⚠ Дробь сократима — приведите её к несократимому виду и проверьте снова.';
+      notReduced++;
+    } else {
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.innerHTML = 'ответ: ' + fracHTML(state[i].answer.n, state[i].answer.d);
+      hintEl.textContent = '';
+      wrong++;
+    }
+  });
+
+  correctEl.textContent = correct;
+  solvedEl.textContent = totalTasks - empty;
+  pbar.style.width = '100%';
+
+  const grade = getGrade(correct, notReduced, totalTasks);
+  let gradeClass = grade === 5 ? 'g5' : grade === 4 ? 'g4' : grade === 3 ? 'g3' : 'g2';
+
+  let summary = `
+    <div class="stats">
+      Всего заданий: <b>${totalTasks}</b><br>
+      Верно: <b>${correct}</b><br>
+      Сократимых дробей (значение верное, но не сокращено): <b>${notReduced}</b><br>
+      Неверно: <b>${wrong}</b><br>
+      Без ответа: <b>${empty}</b>
+    </div>
+    <div class="grade ${gradeClass}">Оценка: ${grade}</div>
+  `;
+
+  if (correct === totalTasks) {
+    resultEl.className = 'result show good';
+    resultEl.innerHTML = `🎉 Отлично! Все ${totalTasks} примеров решены верно и дроби несократимы!` + summary;
+  } else if (grade === 4) {
+    resultEl.className = 'result show good';
+    resultEl.innerHTML = `Хороший результат!` + summary;
+  } else if (notReduced > 0 && wrong === 0) {
+    resultEl.className = 'result show warn';
+    resultEl.innerHTML = `Почти всё верно, но есть несокращённые дроби — исправьте помеченные ⚠.` + summary;
+  } else if (grade === 3) {
+    resultEl.className = 'result show warn';
+    resultEl.innerHTML = `Есть над чем поработать. Разберите ошибки в красных строках.` + summary;
+  } else {
+    resultEl.className = 'result show bad';
+    resultEl.innerHTML = `Нужно потренироваться ещё. Посмотрите правильные ответы в красных строках.` + summary;
+  }
+}
+
+document.getElementById('check').addEventListener('click', checkAll);
+document.getElementById('reset').addEventListener('click', build);
+document.getElementById('mode').addEventListener('change', build);
+document.getElementById('level').addEventListener('change', build);
+document.getElementById('count').addEventListener('change', build);
+
+build();
+</script>
+</body>
+</html>
