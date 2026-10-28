@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Плавающая запятая — математическая игра</title>
+<style>
+:root{--ink:#20304a;--muted:#64748b;--blue:#2563eb;--blue-light:#eaf2ff;--green:#16845b;--green-light:#e3f8ed;--orange:#b85c13;--orange-light:#fff0df;--purple:#7545b5;--purple-light:#f1e9ff;--red:#a32929;--red-light:#fff0f0;--line:#dbe4f0}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,#edf4ff,#fbfaff 50%,#effaf5);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);min-height:100vh}
+button{font:inherit;cursor:pointer;border:0}
+button:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}
+.app{max-width:1080px;margin:auto;padding:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:52px;height:52px;border-radius:17px;background:#253c70;color:white;display:grid;place-items:center;font-size:27px;box-shadow:0 7px 18px #253c7030}
+h1{font-size:clamp(24px,4vw,35px);margin:0;letter-spacing:-.8px} .subtitle{margin:3px 0 0;color:var(--muted);font-size:14px}
+.pill{border:1px solid var(--line);background:#ffffffc9;border-radius:999px;padding:8px 13px;font-weight:700;font-size:13px}
+
+.rules{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}
+.rule{border-radius:17px;padding:14px 13px;min-height:122px}
+.rule b{display:block;font-size:15px;margin-bottom:7px}
+.rule .arrow{font-size:20px;font-weight:900;line-height:1.3;display:flex;align-items:center;gap:6px}
+.rule .arrow .dir-word{font-size:14px}
+.rule small{display:block;margin-top:6px;font-size:12px;line-height:1.35}
+.r1{background:var(--blue-light);color:#1745a0}
+.r2{background:var(--orange-light);color:#8c4307}
+.r3{background:var(--purple-light);color:#5c3296}
+.r4{background:var(--green-light);color:#126b49}
+
+.start-screen{padding:10px 0}
+.start-screen h2{margin:0 0 6px;font-size:22px}
+.start-screen p{color:var(--muted);font-size:14px;margin:0 0 18px;line-height:1.45}
+.count-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.count-btn{background:#eef2f8;color:#33435c;border-radius:16px;padding:18px 8px;font-weight:800;font-size:17px;border:3px solid transparent;transition:all .15s}
+.count-btn:hover{background:#e4edff}
+.count-btn.selected{background:#e4edff;border-color:#477cf6;color:#1745a0}
+.start-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.stats-screen{padding:10px 0;display:none}
+.stats-screen.show{display:block}
+.stats-screen h2{text-align:center;margin:0 0 4px;font-size:26px}
+.stats-screen .stats-sub{text-align:center;color:var(--muted);font-size:14px;margin:0 0 20px}
+.big-stat{text-align:center;margin-bottom:20px}
+.big-stat .big-number{font-size:64px;font-weight:900;color:var(--green);line-height:1}
+.big-stat .big-label{color:var(--muted);font-size:14px;font-weight:700}
+.stat-blocks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:560px;margin:0 auto 20px}
+.stat-block{background:#f8faff;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.stat-block strong{display:block;font-size:28px;font-weight:900}
+.stat-block.good strong{color:var(--green)}
+.stat-block.bad strong{color:var(--red)}
+.stat-block span{font-size:12px;color:var(--muted);font-weight:700}
+.stats-bars{max-width:560px;margin:0 auto 20px;display:grid;gap:8px}
+.bar-row{background:#f8faff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:10px;font-size:13px}
+.bar-row .label{min-width:70px;font-weight:800;color:#33435c}
+.bar-row .bar-wrap{flex:1;height:14px;background:#e9eef6;border-radius:99px;overflow:hidden}
+.bar-row .bar{height:100%;border-radius:99px;background:linear-gradient(90deg,#4b79f6,#24b985);transition:width .4s}
+.bar-row .num{min-width:44px;text-align:right;font-weight:800;color:var(--muted)}
+.stats-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.review{text-align:left;max-width:640px;margin:0 auto 18px;display:grid;gap:8px}
+.review-item{background:#fff8ee;border:1px solid #f3e2c7;border-radius:12px;padding:10px 13px;font-size:14px;line-height:1.45}
+.review-item b{color:#8c4307}
+.stats-conclusion{
+  max-width:560px;margin:0 auto 18px;padding:14px 16px;border-radius:14px;
+  background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;
+  font-size:14px;line-height:1.5;text-align:left;
+}
+.stats-conclusion b{color:#1e1b4b}
+
+.rule-static-overlay{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.rule-static-overlay.show{display:flex}
+.rule-static-card{background:#fff;border-radius:22px;padding:22px 20px;max-width:600px;width:100%;box-shadow:0 24px 60px #00000040;text-align:center;position:relative}
+.rule-static-card h3{margin:0 0 6px;font-size:20px}
+.rule-static-card .sub{color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.45}
+.static-rows{display:grid;gap:14px}
+.static-row{background:#f8faff;border:1px solid var(--line);border-radius:16px;padding:14px 10px}
+.static-row .cap{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.static-row .value{font-size:clamp(28px,6vw,42px);font-weight:900;letter-spacing:-1px;display:inline-flex;align-items:center;gap:2px;flex-wrap:nowrap}
+.static-row .value .d{min-width:30px;height:52px;display:grid;place-items:center;background:#fff;border:1px solid #e0e7f1;border-radius:8px;padding:0 2px}
+.static-row .value .c{color:#1d4ed8;background:#dbeafe;border:1px solid #8ab2ff;border-radius:8px;padding:0 4px;min-width:22px;height:52px;display:grid;place-items:center}
+.static-row .value .c.ghost{color:transparent;background:transparent;border:1px dashed #cbd5e1;font-size:0}
+.static-row .value .c.ghost::after{content:',';font-size:28px;color:#cbd5e1;opacity:.5}
+.static-arrow{font-size:26px;font-weight:900;text-align:center;line-height:1.1;margin:2px 0}
+.static-arrow .steps{display:inline-block;font-size:14px;font-weight:800;border-radius:99px;padding:4px 12px;background:#fef3c7;color:#8a5b00;margin-left:6px;vertical-align:middle}
+.static-arrow.left{color:#6d28d9}
+.static-arrow.right{color:#15803d}
+.rule-static-close{position:absolute;top:10px;right:14px;background:#eef2f8;color:#33435c;border-radius:10px;padding:6px 12px;font-weight:800;font-size:14px}
+.static-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+.panel{background:#ffffffed;border:1px solid #e0e8f3;border-radius:23px;padding:clamp(16px,3vw,25px);box-shadow:0 12px 36px #31466b0b}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{background:#eef2f8;color:#46546a;border-radius:12px;padding:10px 14px;font-weight:750;font-size:14px}
+.tab.active{background:#253c70;color:white;box-shadow:0 5px 12px #253c7020}
+.game{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:17px}
+.game-main{min-width:0}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px;font-weight:700}
+.progress{height:8px;background:#e9eef6;border-radius:99px;overflow:hidden;margin:9px 0 18px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#4b79f6,#24b985);transition:width .25s}
+.prompt{font-size:14px;color:var(--muted);text-align:center;margin:4px 0 8px}
+.example{text-align:center;font-size:clamp(31px,6vw,52px);font-weight:850;letter-spacing:-1.4px;margin:5px 0 17px;word-break:break-word}
+.example .op{color:var(--blue);padding:0 7px}.question{color:#8b9ab0}
+.number-stage{border:1px solid var(--line);border-radius:19px;background:#f9fbff;padding:18px 10px 14px;margin-bottom:14px}
+.stage-label{text-align:center;font-size:12px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.7px}
+.digits{display:flex;align-items:center;justify-content:center;gap:2px;min-height:70px;margin:10px auto 6px;flex-wrap:nowrap;overflow-x:auto;padding:4px 0;position:relative}
+.digit{font-size:clamp(26px,5vw,39px);font-weight:800;min-width:clamp(24px,4vw,36px);height:52px;display:grid;place-items:center;border-radius:8px;background:white;border:1px solid #e0e7f1;position:relative;cursor:pointer}
+.digit.drop-target{background:#fef3c7;border-color:#f59e0b}
+.digit.comma{background:#dbeafe;border-color:#8ab2ff;color:#1745a0;cursor:grab;min-width:22px;padding:0 2px;touch-action:none;user-select:none;-webkit-user-select:none}
+.digit.comma.selected{outline:3px solid #f59e0b;transform:translateY(-3px)}
+.digit.comma.dragging{opacity:.5}
+.digit.comma.comma-fixed{outline:3px solid #22c55e}
+.instruction{text-align:center;font-size:13px;color:var(--muted);min-height:20px;line-height:1.4}
+.controls{display:grid;gap:12px}
+.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.choice{padding:13px 10px;border-radius:13px;background:#edf2fa;color:#33435c;font-weight:800;border:2px solid transparent;transition:background .15s,border-color .15s}
+.choice.selected{background:#e4edff;border-color:#477cf6;color:#1745a0}
+.choice.correct{background:var(--green-light);border-color:#36a878;color:#126b49}
+.choice.wrong{background:var(--red-light);border-color:#e58c8c;color:var(--red)}
+.steps{display:flex;gap:8px}.steps .choice{flex:1}
+.primary{background:#253c70;color:white;padding:13px 18px;border-radius:13px;font-weight:800;box-shadow:0 5px 12px #253c7022}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.secondary{background:#eef2f8;color:#33435c;padding:11px 14px;border-radius:12px;font-weight:750}
+.feedback{border-radius:13px;padding:12px 14px;line-height:1.45;font-size:14px;display:none;margin-top:12px}.feedback.show{display:block}.feedback.good{background:var(--green-light);color:#126b49}.feedback.bad{background:#fff0e7;color:#8c4307}.feedback.neutral{background:var(--blue-light);color:#1745a0}
+.side{background:#f8faff;border:1px solid var(--line);border-radius:18px;padding:17px}
+.side h3{margin:0 0 10px;font-size:16px}
+.hint-toggle{width:100%;text-align:left;background:#eef2f8;color:#33435c;padding:11px 14px;border-radius:12px;font-weight:750;margin-bottom:10px}
+.hint-box{display:none;background:white;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px;font-size:14px;line-height:1.45}
+.hint-box.show{display:block}
+.hint-box .arrowbig{font-size:26px;font-weight:900;color:var(--blue);display:block;margin:4px 0}
+.mini{font-size:13px;color:var(--muted);line-height:1.5}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:white;border:1px solid var(--line);border-radius:13px;text-align:center;padding:11px 5px}
+.stat strong{display:block;font-size:23px}.stat span{font-size:11px;color:var(--muted)}
+.bottom-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.cards{display:flex;flex-direction:column;gap:14px;align-items:center}
+.card{width:100%;max-width:520px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,#ffffff,#f6f9ff);padding:22px 16px;text-align:center;box-shadow:0 8px 24px #31466b0d}
+.card .card-number{font-size:clamp(32px,7vw,54px);font-weight:900;letter-spacing:-1px;line-height:1.15}
+.card .card-number .op{color:var(--blue);padding:0 6px}
+.card .card-q{color:#8b9ab0}
+.footer{text-align:center;color:#75839a;font-size:12px;padding:18px 0 5px}
+
+@media(max-width:760px){.rules{grid-template-columns:repeat(2,1fr)}.rule{min-height:108px}.game{grid-template-columns:1fr}.side{order:-1}.app{padding:12px}.example{margin-bottom:12px}.count-grid{grid-template-columns:repeat(2,1fr)}.stat-blocks{grid-template-columns:1fr}}
+@media(max-width:380px){.rule{padding:11px 9px}.digit{min-width:20px}.digits{gap:1px}.digit.comma{min-width:17px}.tabs .tab{flex:1;padding:10px 6px}}
+
+/* кнопка возврата в главное меню */
+.back-home{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  background:#fff;
+  color:#1878c9;
+  border:1.5px solid #1878c9;
+  border-radius:10px;
+  text-decoration:none;
+  box-shadow:0 3px 10px rgba(23,50,94,.12);
+  cursor:pointer;
+  transition:.15s;
+}
+.back-home svg{ width:20px; height:20px; display:block; }
+.back-home:hover{ background:#1878c9; color:#fff; transform:translateY(-1px); }
+.back-home:focus-visible{ outline:2px solid #1878c9; outline-offset:2px; }
+@media(max-width:520px){
+  .back-home{top:8px;right:8px;width:34px;height:34px}
+  .back-home svg{width:18px;height:18px}
+}
+</style>
+</head>
+<body>
+<a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">, ↔</div><div><h1>Плавающая запятая</h1><p class="subtitle">Поймай правильное направление!</p></div></div>
+ <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+   <div class="pill" id="modeBadge">Куда плывёт?</div>
+ </div>
+</header>
+
+<section class="rules" aria-label="Правила">
+ <div class="rule r1"><b>× 10, 100, 1000…</b><div class="arrow"><span>→</span><span class="dir-word">ВПРАВО</span></div><small>В сторону нулей: 1, 2 или 3 шага</small></div>
+ <div class="rule r2"><b>÷ 10, 100, 1000…</b><div class="arrow"><span>←</span><span class="dir-word">ВЛЕВО</span></div><small>В сторону единицы: 1, 2 или 3 шага</small></div>
+ <div class="rule r3"><b>× 0,1; 0,01…</b><div class="arrow"><span>←</span><span class="dir-word">ВЛЕВО</span></div><small>В сторону единицы: 1, 2 или 3 шага</small></div>
+ <div class="rule r4"><b>÷ 0,1; 0,01…</b><div class="arrow"><span>→</span><span class="dir-word">ВПРАВО</span></div><small>В сторону нулей: 1, 2 или 3 шага</small></div>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Режим игры">
+ <button class="tab active" data-mode="direction">🧭 Куда плывёт?</button>
+ <button class="tab" data-mode="move">🌊 Поймай запятую</button>
+ <button class="tab" data-mode="answer">🎯 Найди результат</button>
+</div>
+
+<section class="panel">
+ <div class="start-screen" id="startScreen">
+   <h2 id="startTitle">Сколько примеров решим?</h2>
+   <p id="startSub">Выбери количество заданий. В конце будет статистика: сколько верно, сколько ошибок и какие правила стоит повторить.</p>
+   <div class="count-grid" id="countGrid">
+     <button class="count-btn" data-count="5">5</button>
+     <button class="count-btn selected" data-count="10">10</button>
+     <button class="count-btn" data-count="15">15</button>
+     <button class="count-btn" data-count="20">20</button>
+   </div>
+   <div class="start-actions">
+     <button class="primary" id="startBtn">Начать →</button>
+   </div>
+ </div>
+
+ <div id="gameScreen" style="display:none">
+  <div class="game">
+   <div class="game-main">
+    <div class="topline"><span id="levelLabel">Задание</span><span id="taskCount">Задание 1 из 10</span></div>
+    <div class="progress"><div id="progressFill"></div></div>
+    <p class="prompt" id="prompt">Выбери направление и количество шагов</p>
+    <div class="example" id="example">3,4 <span class="op">×</span> 10 <span class="question">= ?</span></div>
+    <div id="stage"></div>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    <div class="bottom-actions">
+      <button class="secondary" id="nextBtn" style="display:none">Следующее задание →</button>
+    </div>
+   </div>
+   <aside class="side">
+    <h3>🧠 Подсказка</h3>
+    <button class="hint-toggle" id="hintToggle" aria-expanded="false">Показать подсказку ▾</button>
+    <div class="hint-box" id="hintBox">
+      <div id="sideRule">Умножаем на 10 — запятая на один шаг вправо.</div>
+      <span class="arrowbig" id="sideArrow">→</span>
+      <div id="sideExplain" style="font-size:13px;color:var(--muted)">Смотри, куда плывёт запятая, и считай шаги.</div>
+    </div>
+    <p class="mini" id="sideMini">Если цифр не хватает, допиши нули. У целого числа запятая невидимо стоит в конце.</p>
+    <div class="score-grid"><div class="stat"><strong id="score">0</strong><span>верно</span></div><div class="stat"><strong id="streak">0</strong><span>подряд</span></div><div class="stat"><strong id="accuracy">—</strong><span>точность</span></div></div>
+   </aside>
+  </div>
+ </div>
+
+ <div class="stats-screen" id="statsScreen">
+   <h2 id="statsTitle">Готово!</h2>
+   <p class="stats-sub" id="statsSub"></p>
+   <div class="big-stat">
+     <div class="big-number" id="bigPercent">0%</div>
+     <div class="big-label">правильных ответов</div>
+   </div>
+   <div class="stat-blocks">
+     <div class="stat-block good"><strong id="statCorrect">0</strong><span>верно</span></div>
+     <div class="stat-block bad"><strong id="statWrong">0</strong><span>ошибок</span></div>
+     <div class="stat-block"><strong id="statStreak">0</strong><span>лучшая серия</span></div>
+   </div>
+   <div class="stats-bars" id="statsBars"></div>
+   <div class="stats-conclusion" id="statsConclusion"></div>
+   <div class="review" id="reviewList"></div>
+   <div class="stats-actions">
+     <button class="primary" id="againBtn">↻ Ещё раз</button>
+     <button class="secondary" id="changeModeBtn">Сменить режим</button>
+   </div>
+ </div>
+</section>
+<div class="footer">Учимся шаг за шагом · Ошибаться можно — главное понять правило</div>
+</div>
+
+<div class="rule-static-overlay" id="ruleStatic">
+  <div class="rule-static-card">
+    <button class="rule-static-close" id="staticClose">✕</button>
+    <h3 id="staticTitle">Правило</h3>
+    <div class="sub" id="staticSub"></div>
+    <div class="static-rows" id="staticRows"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+ const $ = s => document.querySelector(s);
+ const $$ = s => [...document.querySelectorAll(s)];
+
+ const pool = [
+   {n:'3,4',op:'×',m:'10',dir:'right',steps:1,out:'34',group:'×10'},
+   {n:'0,04',op:'×',m:'10',dir:'right',steps:1,out:'0,4',group:'×10'},
+   {n:'2,35',op:'×',m:'10',dir:'right',steps:1,out:'23,5',group:'×10'},
+   {n:'0,08',op:'×',m:'10',dir:'right',steps:1,out:'0,8',group:'×10'},
+   {n:'3,47',op:'×',m:'100',dir:'right',steps:2,out:'347',group:'×100'},
+   {n:'5',op:'×',m:'100',dir:'right',steps:2,out:'500',group:'×100'},
+   {n:'0,7',op:'×',m:'100',dir:'right',steps:2,out:'70',group:'×100'},
+   {n:'2,05',op:'×',m:'100',dir:'right',steps:2,out:'205',group:'×100'},
+   {n:'4,125',op:'×',m:'1000',dir:'right',steps:3,out:'4125',group:'×1000'},
+   {n:'35',op:'÷',m:'10',dir:'left',steps:1,out:'3,5',group:'÷10'},
+   {n:'0,08',op:'÷',m:'10',dir:'left',steps:1,out:'0,008',group:'÷10'},
+   {n:'8',op:'÷',m:'100',dir:'left',steps:2,out:'0,08',group:'÷100'},
+   {n:'625',op:'÷',m:'100',dir:'left',steps:2,out:'6,25',group:'÷100'},
+   {n:'1,25',op:'÷',m:'100',dir:'left',steps:2,out:'0,0125',group:'÷100'},
+   {n:'58',op:'÷',m:'1000',dir:'left',steps:3,out:'0,058',group:'÷1000'},
+   {n:'3,6',op:'÷',m:'1000',dir:'left',steps:3,out:'0,0036',group:'÷1000'},
+   {n:'6,2',op:'×',m:'0,1',dir:'left',steps:1,out:'0,62',group:'×0,1'},
+   {n:'7,2',op:'×',m:'0,1',dir:'left',steps:1,out:'0,72',group:'×0,1'},
+   {n:'0,08',op:'×',m:'0,1',dir:'left',steps:1,out:'0,008',group:'×0,1'},
+   {n:'2,5',op:'×',m:'0,1',dir:'left',steps:1,out:'0,25',group:'×0,1'},
+   {n:'7,8',op:'×',m:'0,01',dir:'left',steps:2,out:'0,078',group:'×0,01'},
+   {n:'3,6',op:'×',m:'0,01',dir:'left',steps:2,out:'0,036',group:'×0,01'},
+   {n:'6,3',op:'×',m:'0,001',dir:'left',steps:3,out:'0,0063',group:'×0,001'},
+   {n:'4,5',op:'÷',m:'0,1',dir:'right',steps:1,out:'45',group:'÷0,1'},
+   {n:'7,2',op:'÷',m:'0,1',dir:'right',steps:1,out:'72',group:'÷0,1'},
+   {n:'8',op:'÷',m:'0,1',dir:'right',steps:1,out:'80',group:'÷0,1'},
+   {n:'0,56',op:'÷',m:'0,01',dir:'right',steps:2,out:'56',group:'÷0,01'},
+   {n:'0,72',op:'÷',m:'0,001',dir:'right',steps:3,out:'720',group:'÷0,001'}
+ ];
+
+ function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+ function parseNum(s){return Number(String(s).replace(',','.'))}
+ function fmt(n){
+   if(Math.abs(n)<1e-12)n=0;
+   let s=Number(n.toPrecision(12)).toString();
+   if(s.includes('e')) s=n.toFixed(10).replace(/0+$/,'').replace(/\.$/,'');
+   return s.replace('.',',');
+ }
+ function normalizeNumber(s){
+   let str=String(s).replace(',','.').replace(/\.$/,'');
+   if(str.includes('.')) str=str.replace(/0+$/,'').replace(/\.$/,'');
+   if(str==='')str='0';
+   let parts=str.split('.');
+   let whole=parts[0]||'0';
+   whole=whole.replace(/^0+(?=\d)/,'')||'0';
+   let frac=parts[1]!==undefined?parts[1]:'';
+   return frac?whole+','+frac:whole;
+ }
+ function moveDecimal(number, shift){
+   let s=String(number).replace(',','.');
+   let sign='';
+   if(s[0]==='-'){sign='-';s=s.slice(1)}
+   let [whole,frac='']=s.split('.');
+   let all=whole+frac;
+   let pos=whole.length+shift;
+   if(pos<=0) return sign+'0,'+'0'.repeat(-pos)+all;
+   if(pos>=all.length) return sign+all+'0'.repeat(pos-all.length);
+   return sign+all.slice(0,pos)+','+all.slice(pos);
+ }
+ function getShift(q){
+   if(/^0,0*1$/.test(q.m)){
+     let k=q.m.split(',')[1].length;
+     return q.op==='×' ? -k : k;
+   }
+   let k=String(q.m).length-1;
+   return q.op==='×' ? k : -k;
+ }
+ function expected(q){ return normalizeNumber(moveDecimal(q.n,getShift(q))); }
+ function stepWord(n){return n===1?'шаг':n===2?'шага':'шагов'}
+ function dirText(d){return d==='left'?'влево':'вправо'}
+ function ruleText(q){
+   if(q.op==='×' && !q.m.startsWith('0,')) return `Умножаем на ${q.m} — запятая на ${q.steps} ${stepWord(q.steps)} вправо.`;
+   if(q.op==='÷' && !q.m.startsWith('0,')) return `Делим на ${q.m} — запятая на ${q.steps} ${stepWord(q.steps)} влево.`;
+   if(q.op==='×') return `Умножаем на ${q.m} — запятая на ${q.steps} ${stepWord(q.steps)} влево.`;
+   return `Делим на ${q.m} — запятая на ${q.steps} ${stepWord(q.steps)} вправо.`;
+ }
+ function decompose(number){
+   let s=String(number).replace('.',',');
+   let parts=s.split(',');
+   return {whole:parts[0]||'0',frac:parts[1]||''};
+ }
+
+ function pickBalancedQuestions(count){
+   const groups = ['×10','×100','×1000','÷10','÷100','÷1000','×0,1','×0,01','×0,001','÷0,1','÷0,01','÷0,001'];
+   const byGroup = {};
+   groups.forEach(g=>byGroup[g]=shuffle(pool.filter(q=>q.group===g)));
+   const result = [];
+   let gi = 0;
+   while(result.length < count){
+     let added = false;
+     for(let k=0;k<groups.length && result.length<count;k++){
+       const g = groups[(gi+k)%groups.length];
+       if(byGroup[g].length){ result.push(byGroup[g].pop()); added = true; }
+     }
+     gi++;
+     if(!added) break;
+   }
+   if(result.length < count){
+     const rest = shuffle(pool.filter(q=>!result.includes(q)));
+     while(result.length<count && rest.length) result.push(rest.pop());
+   }
+   return shuffle(result).slice(0, count);
+ }
+
+ // ================== ДИСТРАКТОРЫ ИЗ ТИПИЧНЫХ ОШИБОК ==================
+ function buildAnswerOptions(q){
+   const correct = expected(q);
+   const shift = getShift(q);
+   const wrongSide = normalizeNumber(moveDecimal(q.n, -shift));
+   const oneLess = normalizeNumber(moveDecimal(q.n, shift>0 ? shift-1 : shift+1));
+   const oneMore = normalizeNumber(moveDecimal(q.n, shift>0 ? shift+1 : shift-1));
+   let lostZero;
+   const {whole:w, frac:f} = decompose(correct);
+   if(f.length){
+     lostZero = normalizeNumber(w + ',' + f.slice(0, -1));
+     if(lostZero === correct || lostZero === w) lostZero = normalizeNumber(w + ',' + f + '0');
+   }else{
+     lostZero = normalizeNumber(String(w).slice(0, -1) || '0');
+     if(lostZero === correct || lostZero === '0') lostZero = normalizeNumber(w + '0');
+   }
+   const candidates = [wrongSide, oneLess, oneMore, lostZero];
+   const opts = new Set([correct]);
+   for(const c of candidates){
+     if(c !== correct && !opts.has(c)) opts.add(c);
+     if(opts.size >= 4) break;
+   }
+   let add = 1;
+   while(opts.size < 4){
+     opts.add(fmt(parseNum(correct) + add));
+     add++;
+   }
+   return shuffle([...opts].slice(0, 4));
+ }
+
+ const state = {
+   mode:'direction', total:0, task:0, correct:0, wrong:0, streak:0, bestStreak:0,
+   answered:false, current:null, commaPos:null,
+   selectedDir:null, selectedSteps:null,
+   selectedAnswer:null, mistakes:[], results:[]
+ };
+ let questions = [];
+ let pendingCount = 10;
+ $$('#countGrid .count-btn').forEach(b=>b.addEventListener('click',()=>{
+   pendingCount = Number(b.dataset.count);
+   $$('#countGrid .count-btn').forEach(x=>x.classList.toggle('selected', x===b));
+ }));
+ $('#startBtn').addEventListener('click',()=>startRound(pendingCount));
+
+ function startRound(count){
+   state.total = count; state.task = 0; state.correct = 0; state.wrong = 0;
+   state.streak = 0; state.bestStreak = 0; state.mistakes = []; state.results = [];
+   questions = pickBalancedQuestions(count);
+   state.total = questions.length;
+   $('#startScreen').style.display = 'none';
+   $('#statsScreen').classList.remove('show');
+   $('#gameScreen').style.display = 'block';
+   render();
+ }
+
+ // ================== ДОРОЖКА ==================
+ function buildTape(q){
+   const {whole,frac}=decompose(q.n);
+   const shift=getShift(q);
+   const digits=whole+frac;
+   const leftPad = Math.max(2, Math.abs(shift)+1);
+   const rightPad = Math.max(3, Math.abs(shift)+1);
+   const raw = '0'.repeat(leftPad) + digits + '0'.repeat(rightPad);
+   const baseCommaPos = leftPad + whole.length;
+   return {raw, baseCommaPos, whole, frac};
+ }
+ function tapeToNumber(raw, pos){
+   let whole = raw.slice(0, pos);
+   let frac = raw.slice(pos);
+   if(whole==='') whole='0';
+   whole = whole.replace(/^0+(?=\d)/,'');
+   if(whole==='') whole='0';
+   frac = frac.replace(/0+$/,'');
+   if(frac==='') return whole;
+   return whole+','+frac;
+ }
+ function renderTapeStatic(q, container, commaPos, interactive){
+   const {raw}=buildTape(q);
+   container.innerHTML='';
+   for(let i=0;i<raw.length;i++){
+     const d=document.createElement('div');
+     d.className='digit'; d.textContent=raw[i]; d.dataset.idx=i;
+     if(interactive){
+       d.addEventListener('click',()=>{ if(state.answered)return; placeCommaAt(i, q); });
+       d.addEventListener('dragover',e=>{ if(state.answered)return; e.preventDefault(); d.classList.add('drop-target'); });
+       d.addEventListener('dragleave',()=>d.classList.remove('drop-target'));
+       d.addEventListener('drop',e=>{ e.preventDefault(); d.classList.remove('drop-target'); if(state.answered)return; placeCommaAt(i, q); });
+     }
+     container.appendChild(d);
+     if(i === commaPos-1){
+       const b=document.createElement('button');
+       b.className='digit comma selected'+(interactive?'':' comma-fixed');
+       b.type='button';b.textContent=',';b.setAttribute('aria-label','Запятая');
+       b.draggable=interactive;
+       if(interactive){
+         b.addEventListener('dragstart',e=>{ if(state.answered){e.preventDefault();return} b.classList.add('dragging'); e.dataTransfer.setData('text/plain',String(state.commaPos)); e.dataTransfer.effectAllowed='move'; });
+         b.addEventListener('dragend',()=>b.classList.remove('dragging'));
+       }
+       container.appendChild(b);
+     }
+   }
+   if(commaPos >= raw.length){
+     const b=document.createElement('button');
+     b.className='digit comma selected'+(interactive?'':' comma-fixed');
+     b.type='button';b.textContent=',';b.draggable=interactive;
+     container.appendChild(b);
+   }
+ }
+ function placeCommaAt(pos, q){ if(state.answered)return; state.commaPos=pos; moveCommaInDom(pos); }
+ function moveCommaInDom(pos){
+   const container=$('#digits'); if(!container)return;
+   const comma=container.querySelector('.comma'); if(!comma)return;
+   const targetDigit=container.querySelector(`.digit[data-idx="${pos}"]`);
+   if(targetDigit) container.insertBefore(comma, targetDigit); else container.appendChild(comma);
+ }
+ function commaPositionToNumber(pos, q){ const {raw}=buildTape(q); return tapeToNumber(raw, pos); }
+
+ // ================== РЕНДЕР ==================
+ function render(){
+   const q = questions[state.task];
+   if(!q){ showStats(); return; }
+   state.current = q; state.answered = false;
+   state.selectedDir = null; state.selectedSteps = null;
+   state.selectedAnswer = null; state.commaPos = null;
+
+   $('#feedback').className='feedback'; $('#feedback').textContent='';
+   $('#nextBtn').style.display='none';
+   $('#nextBtn').textContent = (state.task === state.total-1) ? 'Показать статистику →' : 'Следующее задание →';
+   $('#hintBox').classList.remove('show');
+   $('#hintToggle').setAttribute('aria-expanded','false');
+   $('#hintToggle').textContent='Показать подсказку ▾';
+
+   const badges = {direction:'Куда плывёт?',move:'Поймай запятую',answer:'Найди результат'};
+   $('#modeBadge').textContent = badges[state.mode];
+   $('#levelLabel').textContent = ruleText(q).split('—')[0].trim();
+   $('#taskCount').textContent = `Задание ${state.task+1} из ${state.total}`;
+   $('#progressFill').style.width = (state.task/state.total*100)+'%';
+
+   // В "Найди результат" пример и подпись показываются ТОЛЬКО в карточке режима.
+   // Общий #example и #prompt скрываем, чтобы не было дублей.
+   if(state.mode === 'answer'){
+     $('#example').style.display = 'none';
+     $('#prompt').style.display = 'none';
+   }else{
+     $('#example').style.display = '';
+     $('#prompt').style.display = '';
+     $('#example').innerHTML = `${q.n} <span class="op">${q.op}</span> ${q.m} <span class="question">= ?</span>`;
+   }
+
+   $('#sideRule').textContent = ruleText(q);
+   const shift = getShift(q);
+   $('#sideArrow').textContent = shift<0?'←':'→';
+   $('#sideExplain').textContent = `${Math.abs(shift)} ${stepWord(Math.abs(shift))} ${dirText(shift<0?'left':'right')}.`;
+   updateStats();
+
+   const prompts = {
+     direction:'Выбери направление и количество шагов',
+     move:'Перетащи запятую на нужное место',
+     answer:'Выбери правильный результат'
+   };
+   $('#prompt').textContent = prompts[state.mode];
+   $('#hintToggle').onclick = ()=>{
+     const box = $('#hintBox'); const open = box.classList.toggle('show');
+     $('#hintToggle').setAttribute('aria-expanded', String(open));
+     $('#hintToggle').textContent = open?'Скрыть подсказку ▴':'Показать подсказку ▾';
+   };
+
+   if(state.mode==='direction') renderDirection(q);
+   else if(state.mode==='answer') renderAnswer(q);
+   else renderMove(q);
+ }
+ function updateStats(){
+   $('#score').textContent = state.correct;
+   $('#streak').textContent = state.streak;
+   $('#accuracy').textContent = state.results.length ? Math.round(state.correct/state.results.length*100)+'%' : '—';
+ }
+
+ // ================== MOVE ==================
+ function renderMove(q){
+   const {baseCommaPos} = buildTape(q);
+   state.commaPos = baseCommaPos;
+   $('#stage').innerHTML = `
+     <div class="number-stage">
+       <div class="stage-label">Перетащи запятую или нажми на цифру</div>
+       <div class="digits" id="digits"></div>
+       <div class="instruction">Перетащи запятую мышкой или нажми на цифру перед нужной позицией.</div>
+     </div>
+     <div class="controls" id="controls">
+       <button class="primary" id="checkBtn">Проверить позицию запятой</button>
+     </div>
+   `;
+   const container = $('#digits');
+   container.addEventListener('dragover', e=>{ if(!state.answered) e.preventDefault(); });
+   container.addEventListener('drop', e=>{
+     if(state.answered) return; e.preventDefault();
+     const target = e.target.closest('.digit');
+     if(target && !target.classList.contains('comma') && target.dataset.idx!=null) placeCommaAt(Number(target.dataset.idx), q);
+   });
+   renderTapeStatic(q, container, state.commaPos, true);
+ }
+ function checkMove(){
+   if(state.answered) return;
+   const q = state.current;
+   const userNum = normalizeNumber(commaPositionToNumber(state.commaPos, q));
+   const correctNum = expected(q);
+   const ok = userNum === correctNum;
+   state.answered = true;
+   if(ok){
+     showFeedback('good', `⭐ Точно! ${q.n} ${q.op} ${q.m} = ${correctNum}. ${ruleText(q)}`);
+     finalizeTask(true);
+   }else{
+     showFeedback('bad', `🌱 Неверно. У тебя получилось ${userNum}, а должно быть ${correctNum}. ${ruleText(q)}`);
+     const {raw, baseCommaPos} = buildTape(q);
+     const shift = getShift(q);
+     const correctPos = Math.max(0, Math.min(raw.length, baseCommaPos + shift));
+     state.commaPos = correctPos;
+     moveCommaInDom(correctPos);
+     const c = $('#digits .comma'); if(c) c.classList.add('comma-fixed');
+     showRuleStatic(q);
+     finalizeTask(false);
+   }
+ }
+
+ // ================== DIRECTION ==================
+ function renderDirection(q){
+   $('#stage').innerHTML = `
+     <div class="cards">
+       <div class="card">
+         <div class="stage-label" style="margin-bottom:10px">Куда и на сколько шагов?</div>
+         <div class="card-number">${q.n} <span class="op">${q.op}</span> ${q.m}</div>
+         <div class="card-q" style="margin-top:6px">Запятая плывёт…</div>
+       </div>
+     </div>
+     <div class="controls" id="controls">
+       <div><div class="stage-label" style="margin-bottom:8px">1. Направление</div>
+         <div class="choice-row">
+           <button class="choice" data-dir="left">← Влево</button>
+           <button class="choice" data-dir="right">Вправо →</button>
+         </div>
+       </div>
+       <div><div class="stage-label" style="margin-bottom:8px">2. Сколько шагов?</div>
+         <div class="steps">
+           <button class="choice" data-steps="1">1 шаг</button>
+           <button class="choice" data-steps="2">2 шага</button>
+           <button class="choice" data-steps="3">3 шага</button>
+         </div>
+       </div>
+       <button class="primary" id="checkBtn">Проверить</button>
+     </div>
+   `;
+   bindDirStep();
+ }
+ function bindDirStep(){
+   $$('#controls [data-dir]').forEach(b=>b.addEventListener('click',()=>{
+     if(state.answered)return;
+     state.selectedDir = b.dataset.dir;
+     $$('#controls [data-dir]').forEach(x=>x.classList.toggle('selected', x===b));
+   }));
+   $$('#controls [data-steps]').forEach(b=>b.addEventListener('click',()=>{
+     if(state.answered)return;
+     state.selectedSteps = Number(b.dataset.steps);
+     $$('#controls [data-steps]').forEach(x=>x.classList.toggle('selected', x===b));
+   }));
+ }
+ function checkDirectionOnly(){
+   if(state.answered) return;
+   const q = state.current;
+   if(!state.selectedDir || !state.selectedSteps){ showFeedback('neutral','Выбери направление и количество шагов.'); return; }
+   const ok = state.selectedDir===q.dir && state.selectedSteps===q.steps;
+   state.answered = true;
+   markChoiceResult('#controls [data-dir]', q.dir, state.selectedDir);
+   markChoiceResult('#controls [data-steps]', String(q.steps), String(state.selectedSteps));
+   if(ok){
+     showFeedback('good', `⭐ Отлично! ${ruleText(q)}`);
+     finalizeTask(true);
+   }else{
+     showFeedback('bad', `🌱 Неверно. Правильно: ${dirText(q.dir)} на ${q.steps} ${stepWord(q.steps)}. ${ruleText(q)}`);
+     showRuleStatic(q);
+     finalizeTask(false);
+   }
+ }
+
+ // ================== ANSWER ==================
+ function renderAnswer(q){
+   const arr = buildAnswerOptions(q);
+   $('#stage').innerHTML = `
+     <div class="cards">
+       <div class="card">
+         <div class="stage-label" style="margin-bottom:10px">Выбери правильный результат</div>
+         <div class="card-number">${q.n} <span class="op">${q.op}</span> ${q.m}</div>
+         <div class="card-q" style="margin-top:6px">= ?</div>
+       </div>
+     </div>
+     <div class="controls" id="controls">
+       <div class="choice-row" id="answerOptions" style="grid-template-columns:1fr 1fr"></div>
+       <button class="primary" id="checkBtn">Проверить</button>
+     </div>
+   `;
+   arr.forEach(v=>{
+     const b = document.createElement('button');
+     b.className='choice'; b.textContent=v; b.dataset.answer=v;
+     b.addEventListener('click',()=>{
+       if(state.answered) return;
+       state.selectedAnswer = v;
+       $$('#answerOptions .choice').forEach(x=>x.classList.remove('selected'));
+       b.classList.add('selected');
+     });
+     $('#answerOptions').appendChild(b);
+   });
+ }
+ function checkAnswerMode(){
+   if(state.answered) return;
+   const q = state.current;
+   if(!state.selectedAnswer){ showFeedback('neutral','Сначала выбери один из вариантов ответа.'); return; }
+   const correct = expected(q);
+   const ok = normalizeNumber(state.selectedAnswer) === correct;
+   state.answered = true;
+   $$('#answerOptions .choice').forEach(b=>{
+     if(normalizeNumber(b.dataset.answer)===correct) b.classList.add('correct');
+     else if(b.dataset.answer===state.selectedAnswer) b.classList.add('wrong');
+   });
+   if(ok){
+     showFeedback('good', `⭐ Верно! ${q.n} ${q.op} ${q.m} = ${correct}. ${ruleText(q)}`);
+     finalizeTask(true);
+   }else{
+     showFeedback('bad', `🌱 Неверно. Правильный ответ: ${correct}. ${ruleText(q)}`);
+     showRuleStatic(q);
+     finalizeTask(false);
+   }
+ }
+
+ // ================== ЗАВЕРШЕНИЕ ==================
+ function finalizeTask(ok){
+   state.results.push({ group: state.current.group, ok });
+   if(ok){
+     state.correct++; state.streak++;
+     if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+   }else{
+     state.wrong++; state.streak = 0; state.mistakes.push(state.current);
+   }
+   updateStats();
+   const btn = $('#checkBtn'); if(btn) btn.disabled = true;
+   $('#nextBtn').style.display = 'inline-block';
+   $('#nextBtn').textContent = (state.task === state.total-1) ? 'Показать статистику →' : 'Следующее задание →';
+ }
+ function next(){
+   if(state.task < questions.length-1){ state.task++; render(); }
+   else{ showStats(); }
+ }
+ function showFeedback(type, msg){
+   $('#feedback').className = 'feedback show '+type;
+   $('#feedback').textContent = msg;
+ }
+ function markChoiceResult(selector, correctVal, userVal){
+   $$(selector).forEach(b=>{
+     const val = b.dataset.dir||b.dataset.steps;
+     if(val===correctVal) b.classList.add('correct');
+     else if(val===userVal) b.classList.add('wrong');
+   });
+ }
+
+ // ================== СТАТИСТИКА ==================
+ function showStats(){
+   $('#gameScreen').style.display = 'none';
+   $('#statsScreen').classList.add('show');
+   const total = state.results.length;
+   const percent = total ? Math.round(state.correct/total*100) : 0;
+   $('#statsTitle').textContent = percent===100 ? 'Безупречно! 🎉' : percent>=80 ? 'Отличная работа!' : percent>=60 ? 'Хороший результат!' : 'Есть над чем поработать';
+   $('#statsSub').textContent = `Решено ${total} ${plural(total,'задание','задания','заданий')}`;
+   $('#bigPercent').textContent = percent+'%';
+   $('#bigPercent').style.color = percent>=60 ? 'var(--green)' : 'var(--red)';
+   $('#statCorrect').textContent = state.correct;
+   $('#statWrong').textContent = state.wrong;
+   $('#statStreak').textContent = state.bestStreak;
+
+   const byGroup = {};
+   state.results.forEach(r=>{
+     if(!r.group) return;
+     byGroup[r.group] = byGroup[r.group] || {ok:0, total:0};
+     byGroup[r.group].total++;
+     if(r.ok) byGroup[r.group].ok++;
+   });
+   const groups = Object.keys(byGroup).sort();
+   $('#statsBars').innerHTML = groups.map(g=>{
+     const d = byGroup[g];
+     const p = Math.round(d.ok/d.total*100);
+     return `<div class="bar-row"><span class="label">${g}</span><div class="bar-wrap"><div class="bar" style="width:${p}%"></div></div><span class="num">${d.ok}/${d.total}</span></div>`;
+   }).join('');
+
+   $('#statsConclusion').innerHTML = buildConclusion(byGroup);
+
+   if(state.mistakes.length){
+     $('#reviewList').innerHTML = '<div style="font-weight:800;margin-bottom:4px">Разбор ошибок:</div>'
+       + state.mistakes.map(q=>`<div class="review-item"><b>${q.n} ${q.op} ${q.m}</b> → правильно <b>${expected(q)}</b>. ${ruleText(q)}</div>`).join('');
+   }else{
+     $('#reviewList').innerHTML = '';
+   }
+ }
+
+ function buildConclusion(byGroup){
+   const entries = Object.entries(byGroup).filter(([g,d])=>d.total>0);
+   if(!entries.length) return '';
+   const withShare = entries.map(([g,d])=>({g, share: d.ok/d.total, ok:d.ok, total:d.total}));
+   withShare.sort((a,b)=> a.share - b.share);
+   const weakest = withShare[0];
+   const strongest = withShare[withShare.length-1];
+
+   if(weakest.share === 1){
+     return `<b>Отлично:</b> все группы множителей решены без ошибок. Правило сдвига запятой работает стабильно.`;
+   }
+   if(withShare.length === 1){
+     return `<b>Слабая группа:</b> ${weakest.g} — ${weakest.ok} из ${weakest.total}. Стоит повторить правило для этого случая.`;
+   }
+   return `<b>Слабая группа:</b> ${weakest.g} — ${weakest.ok} из ${weakest.total}. `
+        + `<b>Лучше всего:</b> ${strongest.g} — ${strongest.ok} из ${strongest.total}. `
+        + `Повтори правило для <b>${weakest.g}</b> и попробуй ещё раз.`;
+ }
+
+ function plural(n, one, few, many){
+   const mod10 = n % 10, mod100 = n % 100;
+   if(mod10===1 && mod100!==11) return one;
+   if(mod10>=2 && mod10<=4 && (mod100<10 || mod100>=20)) return few;
+   return many;
+ }
+
+ // ================== СТАТИЧНАЯ СХЕМА ==================
+ function showRuleStatic(q){
+   const overlay = $('#ruleStatic');
+   const title = $('#staticTitle');
+   const sub = $('#staticSub');
+   const rows = $('#staticRows');
+   const shift = getShift(q);
+   const steps = Math.abs(shift);
+   const dir = shift<0?'left':'right';
+   const result = expected(q);
+   title.textContent = q.op==='×' ? `Умножаем на ${q.m}` : `Делим на ${q.m}`;
+   sub.textContent = ruleText(q);
+
+   function renderNumberWithComma(num){
+     const {whole:w, frac:f} = decompose(num);
+     const parts = [];
+     for(let i=0;i<w.length;i++) parts.push(`<span class="d">${w[i]}</span>`);
+     if(f.length){
+       parts.push(`<span class="c">,</span>`);
+       for(let i=0;i<f.length;i++) parts.push(`<span class="d">${f[i]}</span>`);
+     }else{
+       parts.push(`<span class="c ghost" title="запятая стоит в конце, её не пишут"></span>`);
+     }
+     return `<span class="value">${parts.join('')}</span>`;
+   }
+   const isWholeResult = !decompose(result).frac;
+   rows.innerHTML = `
+     <div class="static-row"><div class="cap">Было</div>${renderNumberWithComma(q.n)}</div>
+     <div class="static-arrow ${dir}">${dir==='left'?'←':'→'}<span class="steps">${steps} ${stepWord(steps)} ${dirText(dir)}</span></div>
+     <div class="static-row"><div class="cap">Стало</div>${renderNumberWithComma(result)}</div>
+     ${isWholeResult ? '<div class="static-note">Целое число: запятая стоит в конце, её не пишут. Ноль после запятой не нужен.</div>' : ''}
+   `;
+   overlay.classList.add('show');
+ }
+ function closeStatic(){ $('#ruleStatic').classList.remove('show'); }
+ $('#staticClose').addEventListener('click', closeStatic);
+ $('#ruleStatic').addEventListener('click', e=>{ if(e.target.id==='ruleStatic') closeStatic(); });
+
+ // ================== ОБРАБОТЧИКИ ==================
+ document.addEventListener('click', e=>{
+   if(e.target && e.target.id==='checkBtn'){
+     if(state.mode==='direction') checkDirectionOnly();
+     else if(state.mode==='move') checkMove();
+     else if(state.mode==='answer') checkAnswerMode();
+   }
+ });
+ $('#nextBtn').addEventListener('click', next);
+ $('#againBtn').addEventListener('click', ()=>startRound(state.total));
+ $('#changeModeBtn').addEventListener('click', ()=>{
+   $('#statsScreen').classList.remove('show');
+   $('#gameScreen').style.display = 'none';
+   $('#startScreen').style.display = 'block';
+ });
+ $$('.tab').forEach(b=>b.addEventListener('click', ()=>{
+   $$('.tab').forEach(x=>x.classList.toggle('active', x===b));
+   state.mode = b.dataset.mode;
+   $('#statsScreen').classList.remove('show');
+   $('#gameScreen').style.display = 'none';
+   $('#startScreen').style.display = 'block';
+   const titles = {direction:'Куда плывёт?',move:'Поймай запятую',answer:'Найди результат'};
+   $('#startTitle').textContent = titles[state.mode] + ': сколько примеров?';
+ }));
+
+ $('#startScreen').style.display = 'block';
+})();
+</script>
+</body>
+</html>

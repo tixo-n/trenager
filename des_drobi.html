@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: десятичные дроби</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .sub b { color: #b91c1c; }
+
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .settings {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 14px; font-size: 14px;
+  }
+  .settings label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151; }
+  .settings select {
+    padding: 8px 10px; font-size: 14px; border: 2px solid #d1d5db;
+    border-radius: 8px; background: #fff; cursor: pointer;
+  }
+  .settings select:focus { border-color: #4338ca; outline: none; }
+
+  .modes {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .modes button {
+    padding: 10px 16px; font-size: 14px; border-radius: 10px; cursor: pointer;
+    font-weight: 600; border: 2px solid #d1d5db; background: #fff; color: #374151;
+    transition: .15s;
+  }
+  .modes button.active {
+    border-color: #4338ca; background: #eef2ff; color: #3730a3;
+  }
+
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr { font-size: 19px; font-weight: 600; letter-spacing: .3px; }
+  .task input {
+    width: 150px; padding: 8px 10px; font-size: 16px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    text-align: center;
+  }
+  .task input:focus { border-color: #4338ca; }
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .task .answer { font-size: 14px; color: #6b7280; margin-left: auto; }
+  .task .answer b { color: #b91c1c; }
+
+  /* проверочный режим */
+  .quiz-wrap { padding: 10px 0 4px; }
+  .quiz-counter {
+    font-size: 14px; color: #6b7280; margin-bottom: 14px;
+  }
+  .quiz-counter b { color: #4338ca; font-size: 16px; }
+  .quiz-expr {
+    font-size: 34px; font-weight: 700; text-align: center;
+    padding: 26px 16px; background: #f8fafc; border-radius: 14px;
+    border: 1px solid #e5e7eb; margin-bottom: 18px; letter-spacing: .5px;
+  }
+  .quiz-row {
+    display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  }
+  .quiz-row input {
+    width: 220px; padding: 14px 16px; font-size: 22px;
+    border: 2px solid #d1d5db; border-radius: 12px; outline: none;
+    text-align: center; font-weight: 600;
+  }
+  .quiz-row input:focus { border-color: #4338ca; }
+  .quiz-row button {
+    padding: 14px 24px; font-size: 17px; border: none; border-radius: 12px;
+    background: #4338ca; color: #fff; font-weight: 700; cursor: pointer;
+  }
+  .quiz-row button:hover { background: #3730a3; }
+  .quiz-feedback {
+    text-align: center; font-size: 18px; font-weight: 700;
+    margin-top: 16px; min-height: 26px;
+  }
+  .quiz-feedback.ok { color: #16a34a; }
+  .quiz-feedback.err { color: #dc2626; }
+  .quiz-feedback .small { font-size: 15px; font-weight: 600; color: #6b7280; }
+
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button.primary {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #4338ca; color: #fff;
+  }
+  button.primary:hover { background: #3730a3; }
+  button.ghost {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #e5e7eb; color: #374151;
+  }
+  button.ghost:hover { background: #d1d5db; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+  .stats { margin-top: 10px; font-size: 15px; line-height: 1.7; }
+  .grade {
+    display: inline-block; margin-top: 12px; padding: 6px 16px;
+    border-radius: 999px; font-weight: 800; font-size: 20px;
+  }
+  .grade.g5 { background: #dcfce7; color: #166534; }
+  .grade.g4 { background: #dbeafe; color: #1e40af; }
+  .grade.g3 { background: #fef3c7; color: #92400e; }
+  .grade.g2 { background: #fee2e2; color: #991b1b; }
+  .hidden { display: none !important; }
+
+/* кнопка возврата в главное меню */
+.back-home{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  background:#fff;
+  color:#1878c9;
+  border:1.5px solid #1878c9;
+  border-radius:10px;
+  text-decoration:none;
+  box-shadow:0 3px 10px rgba(23,50,94,.12);
+  cursor:pointer;
+  transition:.15s;
+}
+.back-home svg{ width:20px; height:20px; display:block; }
+.back-home:hover{ background:#1878c9; color:#fff; transform:translateY(-1px); }
+.back-home:focus-visible{ outline:2px solid #1878c9; outline-offset:2px; }
+@media(max-width:520px){
+  .back-home{top:8px;right:8px;width:34px;height:34px}
+  .back-home svg{width:18px;height:18px}
+}
+</style>
+</head>
+<body>
+ <a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
+<div class="container">
+  <h1>🔢 Тренажёр: десятичные дроби</h1>
+  <div class="sub">
+    Ответ вводите десятичной дробью. Разделитель — запятая или точка
+    (например, <b>2,5</b> или <b>2.5</b>).
+  </div>
+
+  <div class="settings">
+    <label>Тема:
+      <select id="topic">
+        <option value="addsub">Сложение и вычитание</option>
+        <option value="mul">Умножение</option>
+        <option value="div">Деление</option>
+        <option value="powers">×/÷ на 10, 100, 1000, 0.1, 0.01, 0.001</option>
+        <option value="all" selected>Все действия</option>
+      </select>
+    </label>
+    <label>Уровень:
+      <select id="level">
+        <option value="easy">Лёгкий</option>
+        <option value="medium" selected>Средний</option>
+        <option value="hard">Сложный</option>
+      </select>
+    </label>
+    <label>Заданий:
+      <select id="count">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="30">30</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="modes">
+    <button id="mode-training" class="active" data-mode="training">📋 Тренировочный (списком)</button>
+    <button id="mode-quiz" data-mode="quiz">🎯 Проверочный (по одному)</button>
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">20</span></span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <!-- ТРЕНИРОВОЧНЫЙ РЕЖИМ -->
+  <div id="trainingWrap">
+    <div id="tasks"></div>
+    <div class="btns">
+      <button id="check" class="primary">Проверить</button>
+      <button id="reset" class="ghost">Пройти заново</button>
+    </div>
+  </div>
+
+  <!-- ПРОВЕРОЧНЫЙ РЕЖИМ -->
+  <div id="quizWrap" class="quiz-wrap hidden">
+    <div class="quiz-counter">Задание <b id="qCurrent">1</b> из <b id="qTotal">20</b></div>
+    <div class="quiz-expr" id="qExpr">—</div>
+    <div class="quiz-row">
+      <input type="text" id="qInput" inputmode="decimal" placeholder="ответ" autocomplete="off">
+      <button id="qSubmit">Ответить</button>
+    </div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// ================= Математика =================
+// Работаем с числами через масштабирование, чтобы избежать ошибок плавающей точки.
+// Представляем десятичную дробь как {i, scale}: value = i / 10^scale.
+
+function decToFrac(str) {
+  str = String(str).replace(',', '.').replace(/\s+/g, '');
+  if (str === '' || str === '-' || str === '.') return null;
+  const m = str.match(/^(-?)(\d*)(?:\.(\d*))?$/);
+  if (!m) return null;
+  const sign = m[1] === '-' ? -1 : 1;
+  const intPart = m[2] || '0';
+  const fracPart = m[3] || '';
+  const scale = fracPart.length;
+  const digits = intPart + fracPart;
+  let i = parseInt(digits || '0', 10);
+  if (isNaN(i)) return null;
+  return { i: sign * i, scale };
+}
+
+function fracToDec(f) {
+  // возвращает строку без лишних нулей
+  const neg = f.i < 0;
+  let s = String(Math.abs(f.i)).padStart(f.scale + 1, '0');
+  let out;
+  if (f.scale === 0) {
+    out = s;
+  } else {
+    out = s.slice(0, s.length - f.scale) + '.' + s.slice(s.length - f.scale);
+  }
+  out = out.replace(/0+$/, '').replace(/\.$/, '');
+  if (out === '') out = '0';
+  return (neg ? '-' : '') + out;
+}
+
+function align(a, b) {
+  const scale = Math.max(a.scale, b.scale);
+  const ai = a.i * Math.pow(10, scale - a.scale);
+  const bi = b.i * Math.pow(10, scale - b.scale);
+  return { ai, bi, scale };
+}
+
+function addF(a, b) {
+  const { ai, bi, scale } = align(a, b);
+  return normalize({ i: ai + bi, scale });
+}
+function subF(a, b) {
+  const { ai, bi, scale } = align(a, b);
+  return normalize({ i: ai - bi, scale });
+}
+function mulF(a, b) {
+  return normalize({ i: a.i * b.i, scale: a.scale + b.scale });
+}
+function divF(a, b) {
+  if (b.i === 0) return null;
+  // a / b = (a.i * 10^b.scale) / (b.i * 10^a.scale)
+  // = (a.i / b.i) * 10^(b.scale - a.scale)
+  // приведём к целому делению: пусть k = 10^shift, где shift достаточно велико
+  // Проще: преобразуем обе дроби в целые с одинаковым масштабом и разделим.
+  const scale = Math.max(a.scale, b.scale);
+  const ai = a.i * Math.pow(10, scale - a.scale);
+  const bi = b.i * Math.pow(10, scale - b.scale);
+  // ai/bi — рациональное число. Переведём в десятичную дробь:
+  // если знаменатель bi имеет только простые множители 2 и 5 — конечная десятичная,
+  // иначе округлим до 10 знаков (для школьных заданий деление подбирается так, чтобы было конечно).
+  return rationalToDec(ai, bi, 12);
+}
+
+function normalize(f) {
+  // убираем хвостовые нули у scale (не у числа), не трогая само значение
+  if (f.i === 0) return { i: 0, scale: 0 };
+  let i = f.i, scale = f.scale;
+  while (scale > 0 && i % 10 === 0) { i /= 10; scale--; }
+  return { i, scale };
+}
+
+// рациональное p/q -> десятичная дробь (с округлением, если бесконечная)
+function rationalToDec(p, q, maxDigits) {
+  if (q === 0) return null;
+  const sign = (p < 0) !== (q < 0) ? -1 : 1;
+  p = Math.abs(p); q = Math.abs(q);
+  const g = gcd(p, q); p /= g; q /= g;
+  // целая часть
+  const intPart = Math.floor(p / q);
+  let rem = p % q;
+  if (rem === 0) return { i: sign * intPart, scale: 0 };
+  let digits = '';
+  const seen = new Map();
+  let repeat = false;
+  for (let k = 0; k < maxDigits; k++) {
+    if (rem === 0) break;
+    rem *= 10;
+    const d = Math.floor(rem / q);
+    rem = rem % q;
+    digits += d;
+    if (rem === 0) break;
+    if (seen.has(rem)) { repeat = true; break; }
+    seen.set(rem, k);
+  }
+  if (repeat) {
+    // округлим до 10 знаков
+    digits = digits.slice(0, 10);
+  }
+  const allDigits = String(intPart) + digits;
+  let i = parseInt(allDigits || '0', 10);
+  return normalize({ i: sign * i, scale: digits.length });
+}
+
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b ? gcd(b, a % b) : a; }
+
+function isEqualDec(a, b) {
+  const { ai, bi } = align(a, b);
+  return ai === bi;
+}
+
+// ================= Генерация =================
+const LEVELS = {
+  easy:   { maxInt: 20,  maxFrac: 10,  decimals: 1 },
+  medium: { maxInt: 100, maxFrac: 100, decimals: 2 },
+  hard:   { maxInt: 1000,maxFrac: 1000,decimals: 3 }
+};
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function randomDec(cfg) {
+  const intPart = rand(0, cfg.maxInt);
+  const decimals = rand(1, cfg.decimals);
+  const factor = Math.pow(10, decimals);
+  const fracPart = rand(0, factor - 1);
+  const i = intPart * factor + fracPart;
+  return normalize({ i, scale: decimals });
+}
+
+function randomPositiveDec(cfg) {
+  let d;
+  do { d = randomDec(cfg); } while (d.i <= 0);
+  return d;
+}
+
+// --- Генераторы по темам ---
+function makeAddSub(cfg) {
+  const a = randomPositiveDec(cfg);
+  let b = randomPositiveDec(cfg);
+  const op = Math.random() < 0.5 ? '+' : '-';
+  if (op === '-' && (a.i * Math.pow(10, b.scale - a.scale) <= b.i * Math.pow(10, a.scale - b.scale))) {
+    // чтобы результат был положительным, поменяем местами
+    return { type: 'addsub', a: b, b: a, op: '-' };
+  }
+  return { type: 'addsub', a, b, op };
+}
+
+function makeMul(cfg) {
+  const a = randomPositiveDec(cfg);
+  const b = randomPositiveDec(cfg);
+  return { type: 'mul', a, b, op: '·' };
+}
+
+function makeDiv(cfg) {
+  // Подбираем так, чтобы результат был конечной десятичной дробью:
+  // b — с знаменателем 2/5, a — произведение с "красивым" частным.
+  // Простой приём: делим одно на другое и проверяем, что обратное преобразование точно.
+  for (let k = 0; k < 300; k++) {
+    const q = randomPositiveDec(cfg);   // частное
+    const b = randomPositiveDec(cfg);   // делитель
+    const a = mulF(q, b);               // делимое
+    if (a.i === 0) continue;
+    const ans = divF(a, b);
+    if (!ans) continue;
+    if (ans.i < 0) continue;
+    // проверяем, что ответ совпадает с q (с учётом округления)
+    if (isEqualDec(ans, q)) {
+      return { type: 'div', a, b, op: ':' };
+    }
+  }
+  // fallback: 6,4 : 0,8 = 8
+  return { type: 'div', a: { i: 64, scale: 1 }, b: { i: 8, scale: 1 }, op: ':' };
+}
+
+function makePower(cfg) {
+  const a = randomPositiveDec(cfg);
+  const factors = [
+    { v: 10,    label: '10',    dir: 'mul' },
+    { v: 100,   label: '100',   dir: 'mul' },
+    { v: 1000,  label: '1000',  dir: 'mul' },
+    { v: 0.1,   label: '0,1',   dir: 'mul' },
+    { v: 0.01,  label: '0,01',  dir: 'mul' },
+    { v: 0.001, label: '0,001', dir: 'mul' }
+  ];
+  const f = factors[rand(0, factors.length - 1)];
+  const op = Math.random() < 0.5 ? '·' : ':';
+  // при делении на 0,1 и т.п. результат тоже конечный
+  return { type: 'power', a, f, op };
+}
+
+function computeAnswer(t) {
+  switch (t.type) {
+    case 'addsub': return t.op === '+' ? addF(t.a, t.b) : subF(t.a, t.b);
+    case 'mul':    return mulF(t.a, t.b);
+    case 'div':    return divF(t.a, t.b);
+    case 'power': {
+      const fv = decToFrac(t.f.label);
+      if (!fv) return null;
+      return t.op === '·' ? mulF(t.a, fv) : divF(t.a, fv);
+    }
+    default: return null;
+  }
+}
+
+function buildSet(total, topic, level) {
+  const cfg = LEVELS[level];
+  const set = [];
+  const push = (t) => set.push(t);
+
+  for (let i = 0; i < total; i++) {
+    let t;
+    if (topic === 'addsub') t = makeAddSub(cfg);
+    else if (topic === 'mul') t = makeMul(cfg);
+    else if (topic === 'div') t = makeDiv(cfg);
+    else if (topic === 'powers') t = makePower(cfg);
+    else {
+      // all
+      const r = Math.random();
+      if (r < 0.3) t = makeAddSub(cfg);
+      else if (r < 0.55) t = makeMul(cfg);
+      else if (r < 0.8) t = makeDiv(cfg);
+      else t = makePower(cfg);
+    }
+    push(t);
+  }
+  return shuffle(set);
+}
+
+// ================= Отображение =================
+function exprHTML(t) {
+  if (t.type === 'power') {
+    return `${fracToDec(t.a)} ${t.op} ${t.f.label}`;
+  }
+  const sym = t.type === 'div' ? ':' : t.op;
+  return `${fracToDec(t.a)} ${sym} ${fracToDec(t.b)}`;
+}
+
+// ================= Состояние =================
+const state = {
+  mode: 'training',
+  topic: 'all',
+  level: 'medium',
+  count: 20,
+  tasks: [],
+  answers: []   // для тренировочного режима (строки)
+};
+
+const els = {
+  topic: document.getElementById('topic'),
+  level: document.getElementById('level'),
+  count: document.getElementById('count'),
+  solved: document.getElementById('solved'),
+  correct: document.getElementById('correct'),
+  totalCount: document.getElementById('totalCount'),
+  pbar: document.getElementById('pbar'),
+  tasks: document.getElementById('tasks'),
+  result: document.getElementById('result'),
+  trainingWrap: document.getElementById('trainingWrap'),
+  quizWrap: document.getElementById('quizWrap'),
+  modeTraining: document.getElementById('mode-training'),
+  modeQuiz: document.getElementById('mode-quiz'),
+  check: document.getElementById('check'),
+  reset: document.getElementById('reset'),
+  qCurrent: document.getElementById('qCurrent'),
+  qTotal: document.getElementById('qTotal'),
+  qExpr: document.getElementById('qExpr'),
+  qInput: document.getElementById('qInput'),
+  qSubmit: document.getElementById('qSubmit'),
+  qFeedback: document.getElementById('qFeedback')
+};
+
+let quizState = null;
+
+function readSettings() {
+  state.topic = els.topic.value;
+  state.level = els.level.value;
+  state.count = parseInt(els.count.value, 10);
+}
+
+function startTraining() {
+  state.mode = 'training';
+  state.tasks = buildSet(state.count, state.topic, state.level);
+  state.answers = new Array(state.count).fill('');
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+
+  els.trainingWrap.classList.remove('hidden');
+  els.quizWrap.classList.add('hidden');
+
+  els.tasks.innerHTML = '';
+  state.tasks.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+    div.innerHTML = `
+      <span class="num">${i + 1}.</span>
+      <span class="expr">${exprHTML(t)} =</span>
+      <input type="text" inputmode="decimal" placeholder="ответ" autocomplete="off">
+      <span class="mark"></span>
+      <span class="answer"></span>
+    `;
+    els.tasks.appendChild(div);
+  });
+
+  els.tasks.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', updateTrainingProgress);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkTraining(); });
+  });
+}
+
+function updateTrainingProgress() {
+  let solved = 0;
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    const v = div.querySelector('input').value.trim();
+    if (v !== '') solved++;
+  });
+  els.solved.textContent = solved;
+  els.pbar.style.width = (solved / state.count * 100) + '%';
+}
+
+function checkTraining() {
+  let correct = 0, wrong = 0, empty = 0;
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const input = div.querySelector('input');
+    const mark = div.querySelector('.mark');
+    const ansEl = div.querySelector('.answer');
+    div.classList.remove('ok', 'err');
+
+    const raw = input.value.trim();
+    if (raw === '') { empty++; mark.textContent = ''; ansEl.textContent = ''; return; }
+    const ua = decToFrac(raw);
+    const truth = computeAnswer(state.tasks[i]);
+    if (!ua || !truth) {
+      wrong++;
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.innerHTML = `ответ: <b>${fracToDec(truth)}</b>`;
+      return;
+    }
+    if (isEqualDec(ua, truth)) {
+      correct++;
+      div.classList.add('ok');
+      mark.textContent = '✓';
+      ansEl.textContent = '';
+    } else {
+      wrong++;
+      div.classList.add('err');
+      mark.textContent = '✗';
+      ansEl.innerHTML = `ответ: <b>${fracToDec(truth)}</b>`;
+    }
+  });
+
+  els.correct.textContent = correct;
+  els.solved.textContent = state.count - empty;
+  els.pbar.style.width = '100%';
+
+  const grade = computeGrade(correct, state.count);
+  showResult(correct, wrong, empty, state.count, grade);
+}
+
+function computeGrade(correct, total) {
+  if (correct === total) return 5;
+  const p = correct / total;
+  if (p >= 0.8) return 4;
+  if (p >= 0.5) return 3;
+  return 2;
+}
+
+function showResult(correct, wrong, empty, total, grade) {
+  const gradeClass = grade === 5 ? 'g5' : grade === 4 ? 'g4' : grade === 3 ? 'g3' : 'g2';
+  const stats = `
+    <div class="stats">
+      Всего заданий: <b>${total}</b><br>
+      Верно: <b>${correct}</b><br>
+      Неверно: <b>${wrong}</b><br>
+      Без ответа: <b>${empty}</b>
+    </div>
+    <div class="grade ${gradeClass}">Оценка: ${grade}</div>
+  `;
+  let cls, title;
+  if (correct === total) { cls = 'good'; title = '🎉 Отлично! Все задания решены верно!'; }
+  else if (grade === 4) { cls = 'good'; title = 'Хороший результат!'; }
+  else if (grade === 3) { cls = 'warn'; title = 'Есть над чем поработать.'; }
+  else { cls = 'bad'; title = 'Нужно потренироваться ещё.'; }
+  els.result.className = 'result show ' + cls;
+  els.result.innerHTML = title + stats;
+}
+
+// ---- Проверочный режим ----
+function startQuiz() {
+  state.mode = 'quiz';
+  state.tasks = buildSet(state.count, state.topic, state.level);
+  quizState = { idx: 0, correct: 0, wrong: 0, finished: false };
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+
+  els.trainingWrap.classList.add('hidden');
+  els.quizWrap.classList.remove('hidden');
+  els.qTotal.textContent = state.count;
+  renderQuizTask();
+}
+
+function renderQuizTask() {
+  const i = quizState.idx;
+  if (i >= state.count) { finishQuiz(); return; }
+  els.qCurrent.textContent = i + 1;
+  els.qExpr.textContent = exprHTML(state.tasks[i]) + ' =';
+  els.qInput.value = '';
+  els.qFeedback.textContent = '';
+  els.qFeedback.className = 'quiz-feedback';
+  els.qInput.disabled = false;
+  els.qSubmit.disabled = false;
+  els.qInput.focus();
+}
+
+function submitQuizAnswer() {
+  if (quizState.finished) return;
+  const i = quizState.idx;
+  const raw = els.qInput.value.trim();
+  if (raw === '') { els.qInput.focus(); return; }
+  const ua = decToFrac(raw);
+  const truth = computeAnswer(state.tasks[i]);
+
+  els.qInput.disabled = true;
+  els.qSubmit.disabled = true;
+
+  if (ua && truth && isEqualDec(ua, truth)) {
+    quizState.correct++;
+    els.qFeedback.className = 'quiz-feedback ok';
+    els.qFeedback.innerHTML = '✓ Верно!';
+  } else {
+    quizState.wrong++;
+    els.qFeedback.className = 'quiz-feedback err';
+    els.qFeedback.innerHTML = `✗ Неверно. Правильный ответ: <span class="small">${fracToDec(truth)}</span>`;
+  }
+
+  els.solved.textContent = i + 1;
+  els.correct.textContent = quizState.correct;
+  els.pbar.style.width = ((i + 1) / state.count * 100) + '%';
+
+  quizState.idx++;
+  setTimeout(() => {
+    if (quizState.idx < state.count) renderQuizTask();
+    else finishQuiz();
+  }, 1200);
+}
+
+function finishQuiz() {
+  quizState.finished = true;
+  els.quizWrap.classList.add('hidden');
+  const grade = computeGrade(quizState.correct, state.count);
+  showResult(quizState.correct, quizState.wrong, 0, state.count, grade);
+  els.result.classList.add('show');
+}
+
+// ================= Переключение режимов =================
+function setMode(mode) {
+  state.mode = mode;
+  els.modeTraining.classList.toggle('active', mode === 'training');
+  els.modeQuiz.classList.toggle('active', mode === 'quiz');
+  if (mode === 'training') startTraining();
+  else startQuiz();
+}
+
+function rebuild() {
+  readSettings();
+  if (state.mode === 'training') startTraining();
+  else startQuiz();
+}
+
+// ================= Обработчики =================
+els.topic.addEventListener('change', rebuild);
+els.level.addEventListener('change', rebuild);
+els.count.addEventListener('change', rebuild);
+els.check.addEventListener('click', checkTraining);
+els.reset.addEventListener('click', startTraining);
+els.modeTraining.addEventListener('click', () => setMode('training'));
+els.modeQuiz.addEventListener('click', () => setMode('quiz'));
+els.qSubmit.addEventListener('click', submitQuizAnswer);
+els.qInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitQuizAnswer(); });
+
+// старт
+readSettings();
+startTraining();
+</script>
+</body>
+</html>
