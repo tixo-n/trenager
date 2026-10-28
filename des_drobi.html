@@ -187,17 +187,17 @@
 <div class="container">
   <h1>🔢 Тренажёр: десятичные дроби</h1>
   <div class="sub">
-    Ответ вводите десятичной дробью. Разделитель — запятая или точка
-    (например, <b>2,5</b> или <b>2.5</b>).
+    Ответ вводите десятичной дробью с <b>запятой</b> (например, <b>2,5</b>).
+    Для удобства можно ввести и с точкой — она будет понята так же.
   </div>
 
   <div class="settings">
     <label>Тема:
       <select id="topic">
         <option value="addsub">Сложение и вычитание</option>
-        <option value="mul">Умножение</option>
-        <option value="div">Деление</option>
-        <option value="powers">×/÷ на 10, 100, 1000, 0.1, 0.01, 0.001</option>
+        <option value="mul">Умножение (в т.ч. на целое)</option>
+        <option value="div">Деление (в т.ч. на целое)</option>
+        <option value="powers">×/÷ на 10, 100, 1000, 0,1, 0,01, 0,001</option>
         <option value="all" selected>Все действия</option>
       </select>
     </label>
@@ -210,9 +210,10 @@
     </label>
     <label>Заданий:
       <select id="count">
-        <option value="10">10</option>
-        <option value="20" selected>20</option>
-        <option value="30">30</option>
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
       </select>
     </label>
   </div>
@@ -223,7 +224,7 @@
   </div>
 
   <div class="bar">
-    <span>Решено: <b id="solved">0</b> / <span id="totalCount">20</span></span>
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">10</span></span>
     <div class="progress"><div id="pbar"></div></div>
     <span>Верно: <b id="correct">0</b></span>
   </div>
@@ -239,7 +240,7 @@
 
   <!-- ПРОВЕРОЧНЫЙ РЕЖИМ -->
   <div id="quizWrap" class="quiz-wrap hidden">
-    <div class="quiz-counter">Задание <b id="qCurrent">1</b> из <b id="qTotal">20</b></div>
+    <div class="quiz-counter">Задание <b id="qCurrent">1</b> из <b id="qTotal">10</b></div>
     <div class="quiz-expr" id="qExpr">—</div>
     <div class="quiz-row">
       <input type="text" id="qInput" inputmode="decimal" placeholder="ответ" autocomplete="off">
@@ -253,8 +254,7 @@
 
 <script>
 // ================= Математика =================
-// Работаем с числами через масштабирование, чтобы избежать ошибок плавающей точки.
-// Представляем десятичную дробь как {i, scale}: value = i / 10^scale.
+// Десятичная дробь: {i, scale}, value = i / 10^scale.
 
 function decToFrac(str) {
   str = String(str).replace(',', '.').replace(/\s+/g, '');
@@ -271,17 +271,18 @@ function decToFrac(str) {
   return { i: sign * i, scale };
 }
 
+// ВАЖНО: отдаём строку с ЗАПЯТОЙ
 function fracToDec(f) {
-  // возвращает строку без лишних нулей
+  if (!f) return '—';
   const neg = f.i < 0;
   let s = String(Math.abs(f.i)).padStart(f.scale + 1, '0');
   let out;
   if (f.scale === 0) {
     out = s;
   } else {
-    out = s.slice(0, s.length - f.scale) + '.' + s.slice(s.length - f.scale);
+    out = s.slice(0, s.length - f.scale) + ',' + s.slice(s.length - f.scale);
   }
-  out = out.replace(/0+$/, '').replace(/\.$/, '');
+  out = out.replace(/0+$/, '').replace(/,$/, '');
   if (out === '') out = '0';
   return (neg ? '-' : '') + out;
 }
@@ -306,34 +307,24 @@ function mulF(a, b) {
 }
 function divF(a, b) {
   if (b.i === 0) return null;
-  // a / b = (a.i * 10^b.scale) / (b.i * 10^a.scale)
-  // = (a.i / b.i) * 10^(b.scale - a.scale)
-  // приведём к целому делению: пусть k = 10^shift, где shift достаточно велико
-  // Проще: преобразуем обе дроби в целые с одинаковым масштабом и разделим.
   const scale = Math.max(a.scale, b.scale);
   const ai = a.i * Math.pow(10, scale - a.scale);
   const bi = b.i * Math.pow(10, scale - b.scale);
-  // ai/bi — рациональное число. Переведём в десятичную дробь:
-  // если знаменатель bi имеет только простые множители 2 и 5 — конечная десятичная,
-  // иначе округлим до 10 знаков (для школьных заданий деление подбирается так, чтобы было конечно).
   return rationalToDec(ai, bi, 12);
 }
 
 function normalize(f) {
-  // убираем хвостовые нули у scale (не у числа), не трогая само значение
   if (f.i === 0) return { i: 0, scale: 0 };
   let i = f.i, scale = f.scale;
   while (scale > 0 && i % 10 === 0) { i /= 10; scale--; }
   return { i, scale };
 }
 
-// рациональное p/q -> десятичная дробь (с округлением, если бесконечная)
 function rationalToDec(p, q, maxDigits) {
   if (q === 0) return null;
   const sign = (p < 0) !== (q < 0) ? -1 : 1;
   p = Math.abs(p); q = Math.abs(q);
   const g = gcd(p, q); p /= g; q /= g;
-  // целая часть
   const intPart = Math.floor(p / q);
   let rem = p % q;
   if (rem === 0) return { i: sign * intPart, scale: 0 };
@@ -350,10 +341,7 @@ function rationalToDec(p, q, maxDigits) {
     if (seen.has(rem)) { repeat = true; break; }
     seen.set(rem, k);
   }
-  if (repeat) {
-    // округлим до 10 знаков
-    digits = digits.slice(0, 10);
-  }
+  if (repeat) digits = digits.slice(0, 10);
   const allDigits = String(intPart) + digits;
   let i = parseInt(allDigits || '0', 10);
   return normalize({ i: sign * i, scale: digits.length });
@@ -366,11 +354,23 @@ function isEqualDec(a, b) {
   return ai === bi;
 }
 
+// Сравнение десятичных дробей по значению: a > b
+function isGreater(a, b) {
+  const { ai, bi } = align(a, b);
+  return ai > bi;
+}
+
+// Целое ли число (масштаб 0)
+function isIntegerDec(f) {
+  return !f || f.scale === 0;
+}
+
 // ================= Генерация =================
+// «Удобные» числа для счёта: дроби с 1–2 знаками и ненулевой дробной частью.
 const LEVELS = {
-  easy:   { maxInt: 20,  maxFrac: 10,  decimals: 1 },
-  medium: { maxInt: 100, maxFrac: 100, decimals: 2 },
-  hard:   { maxInt: 1000,maxFrac: 1000,decimals: 3 }
+  easy:   { maxInt: 10, decimals: 1, intMax: 5  },
+  medium: { maxInt: 20, decimals: 2, intMax: 9  },
+  hard:   { maxInt: 30, decimals: 2, intMax: 12 }
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -380,6 +380,21 @@ function shuffle(a) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// Десятичная дробь из «удобного» набора, ГАРАНТИРОВАННО не целая:
+// i / 10^scale, scale = 1 или 2, дробная часть ненулевая.
+function niceDec(cfg) {
+  const decimals = rand(1, cfg.decimals);
+  const factor = Math.pow(10, decimals);
+  const intPart = rand(1, cfg.maxInt);
+  // дробная часть — «удобная» и НЕНУЛЕВАЯ:
+  const niceFracs = decimals === 1
+    ? [5]                          // 0,5
+    : [5, 10, 25, 50, 75];         // 0,05 / 0,1 / 0,25 / 0,5 / 0,75
+  const fracPart = niceFracs[rand(0, niceFracs.length - 1)];
+  const i = intPart * factor + fracPart;
+  return normalize({ i, scale: decimals });
 }
 
 function randomDec(cfg) {
@@ -397,58 +412,86 @@ function randomPositiveDec(cfg) {
   return d;
 }
 
-// --- Генераторы по темам ---
+// ---------- Сложение / вычитание (без отрицательных результатов) ----------
 function makeAddSub(cfg) {
-  const a = randomPositiveDec(cfg);
-  let b = randomPositiveDec(cfg);
+  const a = niceDec(cfg);
+  const b = niceDec(cfg);
   const op = Math.random() < 0.5 ? '+' : '-';
-  if (op === '-' && (a.i * Math.pow(10, b.scale - a.scale) <= b.i * Math.pow(10, a.scale - b.scale))) {
-    // чтобы результат был положительным, поменяем местами
-    return { type: 'addsub', a: b, b: a, op: '-' };
+
+  if (op === '+') {
+    return { type: 'addsub', a, b, op: '+' };
   }
-  return { type: 'addsub', a, b, op };
+  // Для вычитания гарантируем a > b, чтобы результат был положительным.
+  if (isGreater(a, b)) return { type: 'addsub', a, b, op: '-' };
+  if (isGreater(b, a)) return { type: 'addsub', a: b, b: a, op: '-' };
+  // равны — прибавим к a немного, чтобы получить строго положительную разность
+  const bumped = normalize({ i: a.i + 1, scale: a.scale });
+  return { type: 'addsub', a: bumped, b, op: '-' };
 }
 
+// ---------- Умножение на дробь (оба множителя — дробные) ----------
 function makeMul(cfg) {
-  const a = randomPositiveDec(cfg);
-  const b = randomPositiveDec(cfg);
+  const a = niceDec(cfg);
+  const b = niceDec(cfg);
   return { type: 'mul', a, b, op: '·' };
 }
 
+// ---------- Умножение на целое число ----------
+function makeMulInt(cfg) {
+  const intVal = rand(2, cfg.intMax);
+  const a = niceDec(cfg);
+  return { type: 'mulint', a, int: intVal, op: '·' };
+}
+
+// ---------- Деление на дробь (частное — «круглое», оба числа дробные) ----------
 function makeDiv(cfg) {
-  // Подбираем так, чтобы результат был конечной десятичной дробью:
-  // b — с знаменателем 2/5, a — произведение с "красивым" частным.
-  // Простой приём: делим одно на другое и проверяем, что обратное преобразование точно.
-  for (let k = 0; k < 300; k++) {
-    const q = randomPositiveDec(cfg);   // частное
-    const b = randomPositiveDec(cfg);   // делитель
-    const a = mulF(q, b);               // делимое
+  for (let k = 0; k < 400; k++) {
+    const q = niceDec(cfg);          // «круглое» частное — дробное
+    const b = niceDec(cfg);          // делитель — дробный
+    const a = mulF(q, b);            // делимое
     if (a.i === 0) continue;
+    // делимое не должно быть целым (иначе пример «дробь : дробь» даст целое a)
+    if (isIntegerDec(a)) continue;
     const ans = divF(a, b);
-    if (!ans) continue;
-    if (ans.i < 0) continue;
-    // проверяем, что ответ совпадает с q (с учётом округления)
+    if (!ans || ans.i < 0) continue;
     if (isEqualDec(ans, q)) {
       return { type: 'div', a, b, op: ':' };
     }
   }
-  // fallback: 6,4 : 0,8 = 8
   return { type: 'div', a: { i: 64, scale: 1 }, b: { i: 8, scale: 1 }, op: ':' };
 }
 
+// ---------- Деление на целое число ----------
+function makeDivInt(cfg) {
+  for (let k = 0; k < 400; k++) {
+    const intVal = rand(2, cfg.intMax);    // делитель — целое
+    const q = niceDec(cfg);                 // «круглое» частное — дробное
+    const a = mulF(q, { i: intVal, scale: 0 }); // делимое = частное · целое
+    if (a.i === 0) continue;
+    // делимое не должно быть целым
+    if (isIntegerDec(a)) continue;
+    const ans = divF(a, { i: intVal, scale: 0 });
+    if (!ans || ans.i < 0) continue;
+    if (isEqualDec(ans, q)) {
+      return { type: 'divint', a, int: intVal, op: ':' };
+    }
+  }
+  return { type: 'divint', a: { i: 75, scale: 1 }, int: 5, op: ':' };
+}
+
+// ---------- ×/÷ на 10, 100, 1000, 0,1, 0,01, 0,001 ----------
 function makePower(cfg) {
-  const a = randomPositiveDec(cfg);
+  const a = niceDec(cfg);  // дробное, не целое
   const factors = [
-    { v: 10,    label: '10',    dir: 'mul' },
-    { v: 100,   label: '100',   dir: 'mul' },
-    { v: 1000,  label: '1000',  dir: 'mul' },
-    { v: 0.1,   label: '0,1',   dir: 'mul' },
-    { v: 0.01,  label: '0,01',  dir: 'mul' },
-    { v: 0.001, label: '0,001', dir: 'mul' }
+    { label: '10'    },
+    { label: '100'   },
+    { label: '1000'  },
+    { label: '0,1'   },
+    { label: '0,01'  },
+    { label: '0,001' }
   ];
   const f = factors[rand(0, factors.length - 1)];
   const op = Math.random() < 0.5 ? '·' : ':';
-  // при делении на 0,1 и т.п. результат тоже конечный
   return { type: 'power', a, f, op };
 }
 
@@ -456,7 +499,9 @@ function computeAnswer(t) {
   switch (t.type) {
     case 'addsub': return t.op === '+' ? addF(t.a, t.b) : subF(t.a, t.b);
     case 'mul':    return mulF(t.a, t.b);
+    case 'mulint': return mulF(t.a, { i: t.int, scale: 0 });
     case 'div':    return divF(t.a, t.b);
+    case 'divint': return divF(t.a, { i: t.int, scale: 0 });
     case 'power': {
       const fv = decToFrac(t.f.label);
       if (!fv) return null;
@@ -466,26 +511,36 @@ function computeAnswer(t) {
   }
 }
 
+// ================= Сборка набора =================
 function buildSet(total, topic, level) {
   const cfg = LEVELS[level];
   const set = [];
-  const push = (t) => set.push(t);
 
-  for (let i = 0; i < total; i++) {
-    let t;
-    if (topic === 'addsub') t = makeAddSub(cfg);
-    else if (topic === 'mul') t = makeMul(cfg);
-    else if (topic === 'div') t = makeDiv(cfg);
-    else if (topic === 'powers') t = makePower(cfg);
-    else {
-      // all
+  if (topic === 'addsub') {
+    for (let i = 0; i < total; i++) set.push(makeAddSub(cfg));
+  } else if (topic === 'mul') {
+    // ~40% на целое, остальное — дробь на дробь
+    const nInt = Math.max(1, Math.round(total * 0.4));
+    for (let i = 0; i < nInt; i++) set.push(makeMulInt(cfg));
+    for (let i = 0; i < total - nInt; i++) set.push(makeMul(cfg));
+  } else if (topic === 'div') {
+    // ~40% на целое, остальное — дробь на дробь
+    const nInt = Math.max(1, Math.round(total * 0.4));
+    for (let i = 0; i < nInt; i++) set.push(makeDivInt(cfg));
+    for (let i = 0; i < total - nInt; i++) set.push(makeDiv(cfg));
+  } else if (topic === 'powers') {
+    for (let i = 0; i < total; i++) set.push(makePower(cfg));
+  } else {
+    // Все действия: примерно равные доли, с вкраплением «на целое»
+    for (let i = 0; i < total; i++) {
       const r = Math.random();
-      if (r < 0.3) t = makeAddSub(cfg);
-      else if (r < 0.55) t = makeMul(cfg);
-      else if (r < 0.8) t = makeDiv(cfg);
-      else t = makePower(cfg);
+      if (r < 0.20) set.push(makeAddSub(cfg));
+      else if (r < 0.35) set.push(makeMul(cfg));
+      else if (r < 0.50) set.push(makeMulInt(cfg));
+      else if (r < 0.65) set.push(makeDiv(cfg));
+      else if (r < 0.80) set.push(makeDivInt(cfg));
+      else set.push(makePower(cfg));
     }
-    push(t);
   }
   return shuffle(set);
 }
@@ -494,6 +549,12 @@ function buildSet(total, topic, level) {
 function exprHTML(t) {
   if (t.type === 'power') {
     return `${fracToDec(t.a)} ${t.op} ${t.f.label}`;
+  }
+  if (t.type === 'mulint') {
+    return `${fracToDec(t.a)} · ${t.int}`;
+  }
+  if (t.type === 'divint') {
+    return `${fracToDec(t.a)} : ${t.int}`;
   }
   const sym = t.type === 'div' ? ':' : t.op;
   return `${fracToDec(t.a)} ${sym} ${fracToDec(t.b)}`;
@@ -504,9 +565,8 @@ const state = {
   mode: 'training',
   topic: 'all',
   level: 'medium',
-  count: 20,
-  tasks: [],
-  answers: []   // для тренировочного режима (строки)
+  count: 10,
+  tasks: []
 };
 
 const els = {
@@ -541,10 +601,10 @@ function readSettings() {
   state.count = parseInt(els.count.value, 10);
 }
 
+// ---------- Тренировочный режим ----------
 function startTraining() {
   state.mode = 'training';
   state.tasks = buildSet(state.count, state.topic, state.level);
-  state.answers = new Array(state.count).fill('');
   els.totalCount.textContent = state.count;
   els.solved.textContent = '0';
   els.correct.textContent = '0';
@@ -579,8 +639,7 @@ function startTraining() {
 function updateTrainingProgress() {
   let solved = 0;
   els.tasks.querySelectorAll('.task').forEach(div => {
-    const v = div.querySelector('input').value.trim();
-    if (v !== '') solved++;
+    if (div.querySelector('input').value.trim() !== '') solved++;
   });
   els.solved.textContent = solved;
   els.pbar.style.width = (solved / state.count * 100) + '%';
@@ -655,7 +714,7 @@ function showResult(correct, wrong, empty, total, grade) {
   els.result.innerHTML = title + stats;
 }
 
-// ---- Проверочный режим ----
+// ---------- Проверочный режим ----------
 function startQuiz() {
   state.mode = 'quiz';
   state.tasks = buildSet(state.count, state.topic, state.level);
