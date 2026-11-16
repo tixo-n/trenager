@@ -1,7 +1,802 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Раскрытие скобок — 7 класс</title><style>*{box-sizing:border-box}body{margin:0;background:#eef3f9;color:#20304b;font:18px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:24px}header,aside,article{background:white;border-radius:16px;padding:20px;margin-bottom:16px}h1{margin:0 0 8px;font-size:30px}h2{font-size:20px}aside{border-left:5px solid #4279bd}button,select{font:inherit;border:1px solid #bbc9da;border-radius:8px;padding:8px;background:white;color:inherit}button{cursor:pointer}button.primary{background:#235fa9;color:white;border:0} .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.task{background:white;border:2px solid transparent;border-radius:12px;padding:15px}.expr{font:23px Georgia,serif;margin:10px 0}.answer{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font:23px Georgia,serif}.answer select{width:53px;padding:5px;font:20px system-ui}.ok{border-color:#309363;background:#f0fff6}.bad{border-color:#c54b4b;background:#fff4f4}.status{min-height:25px;font-size:15px;margin-top:9px}.ok .status{color:#17663f}.bad .status{color:#a12626}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}progress{width:100%;height:16px;accent-color:#309363}small{color:#596981} @media(max-width:850px){.grid{grid-template-columns:1fr}main{padding:12px}} </style><main><header><small>АЛГЕБРА · 7 КЛАСС ·</small><h1>Раскрытие скобок</h1><p>Выбери знак перед каждым слагаемым. Перед первым положительным слагаемым тоже выбери «+».</p><b id="count"></b><progress id="progress" max="30" value="0"></progress></header><aside><b>Вспомни правило</b><p>«+» перед скобками — сохраняем знаки. «−» перед скобками — меняем каждый знак на противоположный.</p><div class="expr">a + (b − 4) = a + b − 4<br>a − (b − 4) = a − b + 4</div></aside><article class="tools"><button class="primary" id="all">Проверить всё</button><button id="errors">К первой ошибке</button><button id="reset">Начать заново</button><span id="summary" aria-live="polite"></span></article><div id="tasks"></div></main><script>
-const patterns=[[[1,[1]],[1,[1,-1]]],[[1,[1]],[-1,[1,1]]],[[1,[-1]],[-1,[-1,1]]],[[1,[1]],[1,[-1,-1]]],[[1,[-1]],[-1,[1,-1]]],[[1,[1]],[-1,[-1,-1]]],[[1,[-1]],[1,[-1,1]]],[[1,[1]],[-1,[1,-1,1]]],[[1,[-1]],[1,[-1,1,-1]]],[[1,[1]],[-1,[-1,-1,1]]],[[1,[-1]],[-1,[1,1,-1]]],[[1,[1]],[1,[-1,-1,-1]]],[[1,[-1]],[-1,[-1,1,-1]]],[[1,[1]],[1,[1,-1,-1]]],[[1,[-1]],[-1,[-1,-1,-1]]]];
-const data=[];for(let i=0;i<30;i++){let p=i<15?patterns[i]:i<22?[[i%2?1:-1,[1,i%3? -1:1]],[i%3? -1:1,[i%2?-1:1,i%4?1:-1]]]:[[1,[i%2?1:-1]],[i%3? -1:1,[i%2?-1:1,i%4?1:-1]],[i%2?-1:1,[i%3?1:-1,i%4?-1:1]]];let terms=i<7?['m','5','n']:i<15?['p','3a','c','k']:i<22?['a','b','t','7']:['k','c','2m','8','4n'];let j=0,expected=[],expr='',flat=[];p.forEach(([outer,signs],g)=>{let inner='';signs.forEach((s,h)=>{let t=terms[j++];inner+=(s<0?'−':h?' + ':'')+(s<0&&h?' ':'')+t;flat.push(t);expected.push(outer*s)});let grouped=signs.length>1;expr+=(outer<0?' − ':g?' + ':'')+(grouped?'('+inner+')':inner)});data.push({expr,flat,expected})}
-let state={};try{state=JSON.parse(localStorage.getItem('brackets12-v1')||'{}')||{}}catch(e){}const root=document.getElementById('tasks');const cards=[];function save(){try{localStorage.setItem('brackets12-v1',JSON.stringify(state))}catch(e){}}function update(){let n=cards.filter(c=>c.classList.contains('ok')).length;document.getElementById('count').textContent='Верно: '+n+' из 30';document.getElementById('progress').value=n;save()}
-function check(i){let c=cards[i],v=Array.from(c.querySelectorAll('select')).map(s=>s.value);c.classList.remove('ok','bad');let status=c.querySelector('.status');if(v.includes('')){status.textContent='Выбери все знаки.';state[i]={v,checked:false}}else{let ok=v.every((s,j)=>Number(s)===data[i].expected[j]);c.classList.add(ok?'ok':'bad');status.textContent=ok?'✓ Верно!':'Есть ошибка. Проверь знаки перед слагаемыми.';state[i]={v,checked:true}}update()}
-data.forEach((d,i)=>{if([0,15,22].includes(i)){let h=document.createElement('h2');h.textContent=['А. Одна скобка','Б. Две скобки','В. Несколько групп'][[0,15,22].indexOf(i)];root.append(h);let grid=document.createElement('div');grid.className='grid';root.append(grid)}let c=document.createElement('section');c.className='task';let label=document.createElement('small');label.textContent='Пример '+(i+1);c.append(label);let expr=document.createElement('div');expr.className='expr';expr.textContent=d.expr+' =';c.append(expr);let a=document.createElement('div');a.className='answer';d.flat.forEach((t,j)=>{let s=document.createElement('select');s.setAttribute('aria-label','Пример '+(i+1)+', знак '+(j+1));s.innerHTML='<option value="">?</option><option value="1">+</option><option value="-1">−</option>';s.value=state[i]?.v?.[j]||'';s.onchange=()=>{c.classList.remove('ok','bad');c.querySelector('.status').textContent='';state[i]={v:Array.from(c.querySelectorAll('select')).map(x=>x.value),checked:false};update()};a.append(s,document.createTextNode(t))});c.append(a);let status=document.createElement('div');status.className='status';status.setAttribute('aria-live','polite');c.append(status);let b=document.createElement('button');b.textContent='Проверить';b.onclick=()=>check(i);c.append(b);root.lastElementChild.append(c);cards.push(c)});data.forEach((d,i)=>{if(state[i]?.checked)check(i)});update();document.getElementById('all').onclick=()=>{cards.forEach((c,i)=>check(i));document.getElementById('summary').textContent='Ошибок: '+cards.filter(c=>c.classList.contains('bad')).length+'; не завершено: '+cards.filter(c=>!c.classList.contains('ok')&&!c.classList.contains('bad')).length};document.getElementById('errors').onclick=()=>{const c=cards.find(c=>c.classList.contains('bad'))||cards.find(c=>!c.classList.contains('ok'));if(c)c.scrollIntoView({behavior:'smooth',block:'center'})};document.getElementById('reset').onclick=()=>{if(confirm('Удалить все ответы?')){state={};save();location.reload()}};
-</script></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: раскрытие скобок</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .sub b { color: #b91c1c; }
+  .sub code {
+    background: #f3f4f6; padding: 1px 6px; border-radius: 6px;
+    font-size: 13px; color: #111827;
+  }
+
+  /* ---------- Объяснение ---------- */
+  .explain {
+    display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; font-size: 14px;
+  }
+  .explain .rule b { color: #4338ca; }
+  .explain ul { margin: 6px 0 0; padding-left: 20px; }
+  .explain li { margin: 4px 0; }
+  .explain .examples { display: grid; gap: 8px; }
+  .explain .ex {
+    background: #fff; border: 1px solid #e1e9f3; border-radius: 10px;
+    padding: 8px 12px;
+  }
+  .explain .ex .lbl { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #309363; text-transform: uppercase; }
+  .explain .ex.minus .lbl { color: #c54b4b; }
+  .explain .ex .math { font: 20px Georgia, serif; margin-top: 4px; }
+  .explain .ex .math em { font-style: normal; color: #235fa9; }
+  .explain .ex.minus .math em { color: #c54b4b; }
+
+  /* ---------- Панели ---------- */
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .settings {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 14px;
+  }
+  .settings label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151; }
+  .settings select {
+    padding: 8px 10px; font-size: 14px; border: 2px solid #d1d5db;
+    border-radius: 8px; background: #fff; cursor: pointer;
+  }
+  .settings select:focus { border-color: #4338ca; outline: none; }
+  .hidden { display: none !important; }
+
+  .modes {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .modes button {
+    padding: 10px 14px; font-size: 14px; border-radius: 10px; cursor: pointer;
+    font-weight: 600; border: 2px solid #d1d5db; background: #fff; color: #374151;
+    transition: .15s;
+  }
+  .modes button.active {
+    border-color: #4338ca; background: #eef2ff; color: #3730a3;
+  }
+
+  /* ---------- ТРЕНИРОВОЧНЫЙ РЕЖИМ ---------- */
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr { font-size: 19px; font-weight: 600; letter-spacing: .3px; }
+  .task .answer { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 19px; }
+  .task .answer select {
+    width: 54px; padding: 6px; font-size: 17px;
+    border: 2px solid #d1d5db; border-radius: 8px; background: #fff;
+  }
+  .task .answer select:focus { border-color: #4338ca; outline: none; }
+
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .task .hint { font-size: 14px; color: #6b7280; margin-left: auto; }
+  .task .hint b { color: #b91c1c; }
+  .task .errtype { font-size: 13px; color: #b91c1c; font-weight: 600; }
+
+  /* ---------- ПРОВЕРОЧНЫЙ РЕЖИМ ---------- */
+  .quiz-wrap { padding: 10px 0 4px; }
+  .quiz-counter {
+    font-size: 14px; color: #6b7280; margin-bottom: 14px; text-align: center;
+  }
+  .quiz-counter b { color: #4338ca; font-size: 16px; }
+  .quiz-expr {
+    font-size: 36px; font-weight: 700; text-align: center;
+    padding: 30px 16px; background: #f8fafc; border-radius: 14px;
+    border: 1px solid #e5e7eb; margin: 0 auto 22px; letter-spacing: .5px;
+    max-width: 680px;
+  }
+  .quiz-row {
+    display: flex; justify-content: center; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+    max-width: 680px; margin: 0 auto;
+  }
+  .quiz-answer { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 22px; }
+  .quiz-answer select {
+    width: 64px; padding: 10px; font-size: 22px;
+    border: 2px solid #d1d5db; border-radius: 12px; background: #fff;
+  }
+  .quiz-answer select:focus { border-color: #4338ca; outline: none; }
+  .quiz-row > button {
+    padding: 14px 24px; font-size: 17px; border: none; border-radius: 12px;
+    background: #4338ca; color: #fff; font-weight: 700; cursor: pointer;
+  }
+  .quiz-row > button:hover { background: #3730a3; }
+  .quiz-feedback {
+    text-align: center; font-size: 18px; font-weight: 700;
+    margin: 18px auto 0; min-height: 52px; max-width: 680px;
+    line-height: 1.4;
+  }
+  .quiz-feedback.ok { color: #16a34a; }
+  .quiz-feedback.err { color: #dc2626; }
+  .quiz-feedback .small { font-size: 16px; font-weight: 700; color: #111827; }
+  .quiz-feedback .tag { font-size: 13px; font-weight: 700; color: #6b7280; }
+
+  /* ---------- РЕЗУЛЬТАТ ---------- */
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button.primary {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #4338ca; color: #fff;
+  }
+  button.primary:hover { background: #3730a3; }
+  button.ghost {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #e5e7eb; color: #374151;
+  }
+  button.ghost:hover { background: #d1d5db; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+  .stats { margin-top: 10px; font-size: 15px; line-height: 1.7; }
+  .stats b { font-weight: 700; }
+  .errsplit {
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,.55); font-size: 14px;
+  }
+  .errsplit .row { display: flex; gap: 18px; flex-wrap: wrap; }
+  .errsplit .bad { color: #b91c1c; font-weight: 700; }
+  .grade {
+    display: inline-block; margin-top: 12px; padding: 6px 16px;
+    border-radius: 999px; font-weight: 800; font-size: 20px;
+  }
+  .grade.g5 { background: #dcfce7; color: #166534; }
+  .grade.g4 { background: #dbeafe; color: #1e40af; }
+  .grade.g3 { background: #fef3c7; color: #92400e; }
+  .grade.g2 { background: #fee2e2; color: #991b1b; }
+
+  .back-home{
+    position:fixed; top:12px; right:12px; z-index:9999;
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; background:#fff; color:#1878c9;
+    border:1.5px solid #1878c9; border-radius:10px; text-decoration:none;
+    box-shadow:0 3px 10px rgba(23,50,94,.12); cursor:pointer; transition:.15s;
+  }
+  .back-home svg{ width:20px; height:20px; display:block; }
+  .back-home:hover{ background:#1878c9; color:#fff; transform:translateY(-1px); }
+  .back-home:focus-visible{ outline:2px solid #1878c9; outline-offset:2px; }
+  @media(max-width:700px){
+    .explain { grid-template-columns: 1fr; }
+  }
+  @media(max-width:520px){
+    .back-home{top:8px;right:8px;width:34px;height:34px}
+    .back-home svg{width:18px;height:18px}
+  }
+</style>
+</head>
+<body>
+<a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
+<div class="container">
+  <h1>🧩 Тренажёр: раскрытие скобок</h1>
+  <div class="sub">
+    Выбери знак перед каждым слагаемым после раскрытия скобок.
+    Перед первым положительным слагаемым тоже выбери «+».
+    <b>Скобки есть в каждом задании.</b>
+  </div>
+
+  <!-- Объяснение -->
+  <div class="explain">
+    <div class="rule">
+      <b>Правило раскрытия скобок</b>
+      <ul>
+        <li>Знак <b>«+»</b> перед скобками — знаки слагаемых <b>сохраняются</b>.</li>
+        <li>Знак <b>«−»</b> перед скобками — каждый знак <b>меняется на противоположный</b>.</li>
+        <li>Перед первым слагаемым «+» обычно не пишут, но в задании его нужно выбрать.</li>
+      </ul>
+    </div>
+    <div class="examples">
+      <div class="ex">
+        <div class="lbl">Плюс перед скобкой</div>
+        <div class="math">a + (b − 4) = a <em>+</em> b <em>−</em> 4</div>
+      </div>
+      <div class="ex minus">
+        <div class="lbl">Минус перед скобкой</div>
+        <div class="math">a − (b − 4) = a <em>−</em> b <em>+</em> 4</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings">
+    <label>Задание:
+      <select id="taskType">
+        <option value="sign" selected>Определи знаки</option>
+        <option value="calc">Упрости выражение</option>
+      </select>
+    </label>
+    <label>Раздел:
+      <select id="section">
+        <option value="one" selected>Одна скобка</option>
+        <option value="two">Две скобки</option>
+        <option value="many">Несколько групп</option>
+        <option value="all">Все сразу</option>
+      </select>
+    </label>
+    <label>Уровень:
+      <select id="level">
+        <option value="easy">Лёгкий (числа)</option>
+        <option value="medium" selected>Средний (+ буквы)</option>
+        <option value="hard">Сложный (+ несколько букв)</option>
+      </select>
+    </label>
+    <label>Заданий:
+      <select id="count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="modes">
+    <button id="mode-training" class="active" data-mode="training">📋 Тренировочный (списком)</button>
+    <button id="mode-quiz" data-mode="quiz">🎯 Проверочный (по одному)</button>
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">10</span></span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <!-- ТРЕНИРОВОЧНЫЙ РЕЖИМ -->
+  <div id="trainingWrap">
+    <div id="tasks"></div>
+    <div class="btns">
+      <button id="check" class="primary">Проверить</button>
+      <button id="reset" class="ghost">Пройти заново</button>
+    </div>
+  </div>
+
+  <!-- ПРОВЕРОЧНЫЙ РЕЖИМ -->
+  <div id="quizWrap" class="quiz-wrap hidden">
+    <div class="quiz-counter">Задание <b id="qCurrent">1</b> из <b id="qTotal">10</b></div>
+    <div class="quiz-expr" id="qExpr">—</div>
+    <div class="quiz-row" id="qRow"></div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// ==========================================================
+//  МОДЕЛЬ ЗАДАНИЯ
+//  Задание = список групп. Каждая группа:
+//    { outer: +1|-1, terms: [{ sign: +1|-1, text: "3a" }] }
+//  В каждой группе ВСЕГДА минимум 2 слагаемых (чтобы скобка была осмысленной).
+//  В выражении группа ВСЕГДА выводится в скобках.
+//  Требуемый ответ = для каждого слагаемого его итоговый знак
+//  (outer * inner sign). Слагаемые идут в том же порядке.
+// ==========================================================
+
+const TERM_POOL_SIMPLE = ['5','7','3','8','2','4','6','9'];
+const TERM_POOL_LETTER = ['a','b','c','m','n','p','k','x','y'];
+const TERM_POOL_COEF  = ['3a','2b','4m','5n','2c','3k','7a','5b','2m','4n','6c','3x','2y'];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+// Случайное слагаемое по уровню
+function randomTerm(level, used) {
+  let pool;
+  if (level === 'easy') pool = TERM_POOL_SIMPLE;
+  else if (level === 'medium') pool = TERM_POOL_LETTER.concat(TERM_POOL_SIMPLE);
+  else pool = TERM_POOL_COEF.concat(TERM_POOL_LETTER, TERM_POOL_SIMPLE);
+
+  for (let k = 0; k < 40; k++) {
+    const t = pick(pool);
+    if (!used.has(t)) { used.add(t); return t; }
+  }
+  return pick(pool);
+}
+
+// Одна группа (скобка). signsCount — сколько слагаемых внутри.
+// ВСЕГДА минимум 2 слагаемых.
+function randomGroup(level, signsCount, used) {
+  const count = Math.max(2, signsCount);
+  const outer = Math.random() < 0.5 ? 1 : -1;
+  const terms = [];
+  for (let i = 0; i < count; i++) {
+    const sign = Math.random() < 0.5 ? 1 : -1;
+    const text = randomTerm(level, used);
+    terms.push({ sign, text });
+  }
+  return { outer, terms };
+}
+
+// Построение задания по разделу. Скобки есть всегда.
+function makeTask(section, level) {
+  const used = new Set();
+  let groups = [];
+
+  if (section === 'one') {
+    // Одна скобка: 2–3 слагаемых
+    groups = [ randomGroup(level, rand(2, 3), used) ];
+  } else if (section === 'two') {
+    // Две скобки: в каждой 2–3 слагаемых
+    groups = [
+      randomGroup(level, rand(2, 3), used),
+      randomGroup(level, rand(2, 3), used)
+    ];
+  } else if (section === 'many') {
+    // Несколько групп: 2–3 группы, в каждой 2–3 слагаемых
+    const n = rand(2, 3);
+    for (let i = 0; i < n; i++) {
+      groups.push(randomGroup(level, rand(2, 3), used));
+    }
+  } else {
+    // all — случайно выбираем форму, но всегда со скобками
+    const forms = ['one', 'two', 'many'];
+    const f = pick(forms);
+    if (f === 'one') groups = [ randomGroup(level, rand(2, 3), used) ];
+    else if (f === 'two') groups = [ randomGroup(level, rand(2, 3), used), randomGroup(level, rand(2, 3), used) ];
+    else {
+      const n = rand(2, 3);
+      for (let i = 0; i < n; i++) groups.push(randomGroup(level, rand(2, 3), used));
+    }
+  }
+
+  // Плоский список слагаемых и ожидаемые итоговые знаки
+  const flat = [];
+  const expected = [];
+  groups.forEach(g => {
+    g.terms.forEach(t => {
+      flat.push(t.text);
+      expected.push(g.outer * t.sign);
+    });
+  });
+
+  return { groups, flat, expected };
+}
+
+// Строка выражения: каждая группа ВСЕГДА в скобках
+function exprString(task) {
+  let out = '';
+  task.groups.forEach((g, gi) => {
+    const inner = g.terms.map((t, ti) => {
+      if (ti === 0) return (t.sign < 0 ? '−' : '') + t.text;
+      return (t.sign < 0 ? ' − ' : ' + ') + t.text;
+    }).join('');
+    const body = '(' + inner + ')';
+    if (gi === 0) {
+      out += (g.outer < 0 ? '−' : '') + body;
+    } else {
+      out += ' ' + (g.outer < 0 ? '−' : '+') + ' ' + body;
+    }
+  });
+  return out;
+}
+
+// Строка правильного ответа (плоский список с итоговыми знаками)
+function answerString(task) {
+  return task.flat.map((txt, i) => {
+    const s = task.expected[i];
+    return (i === 0 ? (s < 0 ? '−' : '') : (s < 0 ? ' − ' : ' + ')) + txt;
+  }).join('');
+}
+
+// ==========================================================
+//  СОСТОЯНИЕ И DOM
+// ==========================================================
+const state = {
+  mode: 'training',
+  taskType: 'sign',
+  section: 'one',
+  level: 'medium',
+  count: 10,
+  tasks: []
+};
+
+const els = {
+  taskType: document.getElementById('taskType'),
+  section: document.getElementById('section'),
+  level: document.getElementById('level'),
+  count: document.getElementById('count'),
+  solved: document.getElementById('solved'),
+  correct: document.getElementById('correct'),
+  totalCount: document.getElementById('totalCount'),
+  pbar: document.getElementById('pbar'),
+  tasks: document.getElementById('tasks'),
+  result: document.getElementById('result'),
+  trainingWrap: document.getElementById('trainingWrap'),
+  quizWrap: document.getElementById('quizWrap'),
+  modeTraining: document.getElementById('mode-training'),
+  modeQuiz: document.getElementById('mode-quiz'),
+  check: document.getElementById('check'),
+  reset: document.getElementById('reset'),
+  qCurrent: document.getElementById('qCurrent'),
+  qTotal: document.getElementById('qTotal'),
+  qExpr: document.getElementById('qExpr'),
+  qRow: document.getElementById('qRow'),
+  qFeedback: document.getElementById('qFeedback')
+};
+
+let quizState = null;
+
+function readSettings() {
+  state.taskType = els.taskType.value;
+  state.section = els.section.value;
+  state.level = els.level.value;
+  state.count = parseInt(els.count.value, 10);
+}
+
+function buildSet() {
+  const set = [];
+  for (let i = 0; i < state.count; i++) set.push(makeTask(state.section, state.level));
+  return set;
+}
+
+// ---------- Разметка ответа в виде селектов ----------
+function renderAnswerSelects(task, onChange) {
+  const wrap = document.createElement('span');
+  wrap.className = 'answer';
+  task.flat.forEach((txt, i) => {
+    const sel = document.createElement('select');
+    sel.dataset.index = i;
+    sel.setAttribute('aria-label', 'Знак ' + (i + 1));
+    sel.innerHTML = '<option value="">?</option><option value="1">+</option><option value="-1">−</option>';
+    sel.addEventListener('change', onChange);
+    wrap.append(sel, document.createTextNode(txt));
+  });
+  return wrap;
+}
+
+// ==========================================================
+//  ТРЕНИРОВОЧНЫЙ РЕЖИМ
+// ==========================================================
+function startTraining() {
+  state.mode = 'training';
+  state.tasks = buildSet();
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+  els.trainingWrap.classList.remove('hidden');
+  els.quizWrap.classList.add('hidden');
+
+  els.tasks.innerHTML = '';
+  state.tasks.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+    div.innerHTML = `<span class="num">${i + 1}.</span><span class="expr">${exprString(t)} =</span>`;
+
+    const ans = renderAnswerSelects(t, updateTrainingProgress);
+    div.appendChild(ans);
+
+    const tail = document.createElement('span');
+    tail.className = 'hint';
+    tail.innerHTML = `<span class="mark"></span> <span class="hint-text"></span> <span class="errtype"></span>`;
+    div.appendChild(tail);
+
+    els.tasks.appendChild(div);
+  });
+}
+
+function readTrainingAnswer(div) {
+  const sels = Array.from(div.querySelectorAll('.answer select'));
+  const vals = sels.map(s => s.value);
+  if (vals.some(v => v === '')) return null;
+  return vals.map(Number);
+}
+
+function updateTrainingProgress() {
+  let solved = 0;
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    if (readTrainingAnswer(div)) solved++;
+  });
+  els.solved.textContent = solved;
+  els.pbar.style.width = (solved / state.count * 100) + '%';
+}
+
+function checkTraining() {
+  let correct = 0, wrong = 0, empty = 0;
+  let signErr = 0, outerErr = 0;
+
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const task = state.tasks[i];
+    const mark = div.querySelector('.mark');
+    const hintText = div.querySelector('.hint-text');
+    const errEl = div.querySelector('.errtype');
+    div.classList.remove('ok', 'err');
+    mark.textContent = ''; hintText.textContent = ''; errEl.textContent = '';
+
+    const user = readTrainingAnswer(div);
+    if (!user) { empty++; return; }
+
+    const ok = user.length === task.expected.length &&
+               user.every((v, j) => v === task.expected[j]);
+
+    if (ok) {
+      correct++;
+      div.classList.add('ok');
+      mark.textContent = '✓';
+    } else {
+      wrong++;
+      div.classList.add('err');
+      mark.textContent = '✗';
+      hintText.innerHTML = 'ответ: <b>' + answerString(task) + '</b>';
+
+      let diffCount = 0;
+      let outerMistake = false;
+      for (let j = 0; j < task.expected.length; j++) {
+        if (user[j] !== task.expected[j]) {
+          diffCount++;
+          let acc = 0;
+          for (const g of task.groups) {
+            if (j < acc + g.terms.length) {
+              if (g.outer !== user[acc]) outerMistake = true;
+              break;
+            }
+            acc += g.terms.length;
+          }
+        }
+      }
+      if (outerMistake && diffCount === task.expected.length) {
+        outerErr++;
+        errEl.textContent = 'ошибка знака перед скобкой';
+      } else if (diffCount > 0) {
+        signErr++;
+        errEl.textContent = 'ошибка в знаках слагаемых';
+      }
+    }
+  });
+
+  els.correct.textContent = correct;
+  els.solved.textContent = state.count - empty;
+  els.pbar.style.width = '100%';
+
+  showTrainingResult(correct, wrong, empty, signErr, outerErr, state.count);
+}
+
+function showTrainingResult(correct, wrong, empty, signErr, outerErr, total) {
+  const stats = `
+    <div class="stats">
+      Всего заданий: <b>${total}</b><br>
+      Верно: <b>${correct}</b><br>
+      Неверно: <b>${wrong}</b><br>
+      Без ответа: <b>${empty}</b>
+    </div>
+    <div class="errsplit">
+      <div class="row">
+        <span>Ошибки знаков слагаемых: <span class="bad">${signErr}</span></span>
+        <span>Ошибки знака перед скобкой: <span class="bad">${outerErr}</span></span>
+      </div>
+    </div>`;
+  let cls, title;
+  if (correct === total) { cls = 'good'; title = '🎉 Отлично! Все задания решены верно!'; }
+  else if (correct >= Math.ceil(total * 0.8)) { cls = 'good'; title = 'Хороший результат!'; }
+  else if (correct >= Math.ceil(total * 0.5)) { cls = 'warn'; title = 'Есть над чем поработать.'; }
+  else { cls = 'bad'; title = 'Нужно потренироваться ещё.'; }
+  els.result.className = 'result show ' + cls;
+  els.result.innerHTML = title + stats;
+}
+
+// ==========================================================
+//  ПРОВЕРОЧНЫЙ РЕЖИМ
+// ==========================================================
+function startQuiz() {
+  state.mode = 'quiz';
+  state.tasks = buildSet();
+  quizState = { idx: 0, correct: 0, wrong: 0, signErr: 0, outerErr: 0, finished: false };
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+
+  els.trainingWrap.classList.add('hidden');
+  els.quizWrap.classList.remove('hidden');
+  els.qTotal.textContent = state.count;
+  renderQuizTask();
+}
+
+function renderQuizTask() {
+  const i = quizState.idx;
+  if (i >= state.count) { finishQuiz(); return; }
+  const t = state.tasks[i];
+  els.qCurrent.textContent = i + 1;
+  els.qExpr.textContent = exprString(t) + ' =';
+  els.qFeedback.textContent = '';
+  els.qFeedback.className = 'quiz-feedback';
+  els.qRow.innerHTML = '';
+
+  const ans = renderAnswerSelects(t, () => {});
+  ans.classList.add('quiz-answer');
+  els.qRow.appendChild(ans);
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Ответить';
+  btn.addEventListener('click', submitQuizAnswer);
+  els.qRow.appendChild(btn);
+
+  setTimeout(() => {
+    const first = els.qRow.querySelector('select');
+    if (first) first.focus();
+  }, 0);
+}
+
+function submitQuizAnswer() {
+  if (quizState.finished) return;
+  const i = quizState.idx;
+  const task = state.tasks[i];
+  const sels = Array.from(els.qRow.querySelectorAll('select'));
+  const user = sels.map(s => s.value);
+  if (user.some(v => v === '')) return;
+
+  const vals = user.map(Number);
+  const ok = vals.length === task.expected.length &&
+             vals.every((v, j) => v === task.expected[j]);
+
+  let outerMistake = false;
+  let diffCount = 0;
+  for (let j = 0; j < task.expected.length; j++) {
+    if (vals[j] !== task.expected[j]) {
+      diffCount++;
+      let acc = 0;
+      for (const g of task.groups) {
+        if (j < acc + g.terms.length) {
+          if (g.outer !== vals[acc]) outerMistake = true;
+          break;
+        }
+        acc += g.terms.length;
+      }
+    }
+  }
+
+  if (ok) quizState.correct++;
+  else {
+    quizState.wrong++;
+    if (outerMistake && diffCount === task.expected.length) quizState.outerErr++;
+    else quizState.signErr++;
+  }
+
+  els.qRow.querySelectorAll('select, button').forEach(el => { el.disabled = true; });
+
+  els.qFeedback.className = 'quiz-feedback ' + (ok ? 'ok' : 'err');
+  if (ok) {
+    els.qFeedback.innerHTML = '✓ Верно!';
+  } else {
+    let tag;
+    if (outerMistake && diffCount === task.expected.length) tag = 'ошибка знака перед скобкой';
+    else tag = 'ошибка в знаках слагаемых';
+    els.qFeedback.innerHTML =
+      `✗ Неверно. Правильный ответ: <span class="small">${answerString(task)}</span><br><span class="tag">${tag}</span>`;
+  }
+
+  els.solved.textContent = i + 1;
+  els.correct.textContent = quizState.correct;
+  els.pbar.style.width = ((i + 1) / state.count * 100) + '%';
+
+  quizState.idx++;
+  setTimeout(() => {
+    if (quizState.idx < state.count) renderQuizTask();
+    else finishQuiz();
+  }, 1300);
+}
+
+function finishQuiz() {
+  quizState.finished = true;
+  els.quizWrap.classList.add('hidden');
+  const grade = computeGrade(quizState.correct, state.count);
+  showQuizResult(quizState.correct, quizState.wrong, quizState.signErr, quizState.outerErr, state.count, grade);
+}
+
+function computeGrade(correct, total) {
+  if (correct === total) return 5;
+  const p = correct / total;
+  if (p >= 0.8) return 4;
+  if (p >= 0.5) return 3;
+  return 2;
+}
+
+function showQuizResult(correct, wrong, signErr, outerErr, total, grade) {
+  const gradeClass = grade === 5 ? 'g5' : grade === 4 ? 'g4' : grade === 3 ? 'g3' : 'g2';
+  const stats = `
+    <div class="stats">
+      Всего заданий: <b>${total}</b><br>
+      Верно: <b>${correct}</b><br>
+      Неверно: <b>${wrong}</b>
+    </div>
+    <div class="errsplit">
+      <div class="row">
+        <span>Ошибки знаков слагаемых: <span class="bad">${signErr}</span></span>
+        <span>Ошибки знака перед скобкой: <span class="bad">${outerErr}</span></span>
+      </div>
+    </div>
+    <div class="grade ${gradeClass}">Оценка: ${grade}</div>`;
+  let cls, title;
+  if (correct === total) { cls = 'good'; title = '🎉 Отлично! Все задания решены верно!'; }
+  else if (grade === 4) { cls = 'good'; title = 'Хороший результат!'; }
+  else if (grade === 3) { cls = 'warn'; title = 'Есть над чем поработать.'; }
+  else { cls = 'bad'; title = 'Нужно потренироваться ещё.'; }
+  els.result.className = 'result show ' + cls;
+  els.result.innerHTML = title + stats;
+}
+
+// ==========================================================
+//  ПЕРЕКЛЮЧЕНИЕ
+// ==========================================================
+function setMode(mode) {
+  state.mode = mode;
+  els.modeTraining.classList.toggle('active', mode === 'training');
+  els.modeQuiz.classList.toggle('active', mode === 'quiz');
+  if (mode === 'training') startTraining();
+  else startQuiz();
+}
+
+function rebuild() {
+  readSettings();
+  if (state.mode === 'training') startTraining();
+  else startQuiz();
+}
+
+els.taskType.addEventListener('change', rebuild);
+els.section.addEventListener('change', rebuild);
+els.level.addEventListener('change', rebuild);
+els.count.addEventListener('change', rebuild);
+els.check.addEventListener('click', checkTraining);
+els.reset.addEventListener('click', startTraining);
+els.modeTraining.addEventListener('click', () => setMode('training'));
+els.modeQuiz.addEventListener('click', () => setMode('quiz'));
+
+// старт
+readSettings();
+startTraining();
+</script>
+</body>
+</html>
