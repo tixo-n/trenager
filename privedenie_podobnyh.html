@@ -1,12 +1,837 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Приведение подобных слагаемых</title><style>
-*{box-sizing:border-box}body{margin:0;background:#eef3f9;color:#20304b;font:18px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:24px}header,aside,nav,.task{background:white;border-radius:14px;padding:18px;margin-bottom:14px}h1{font-size:30px;margin:8px 0}aside{border-left:5px solid #4279bd}button,input{font:inherit;border:1px solid #bbc9da;border-radius:8px;padding:9px;color:inherit;background:white}button{cursor:pointer}button.primary{background:#235fa9;color:white;border:0}nav,.line{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.task{border:2px solid transparent;margin:0}.expr{font:24px Georgia,serif;margin:12px 0;overflow-wrap:anywhere}input{flex:1;min-width:100px;width:140px}.ok{background:#effbf4;border-color:#309363}.bad{background:#fff3f3;border-color:#c54b4b}.status{font-size:15px;min-height:22px;margin-top:8px}progress{width:100%;height:16px;accent-color:#309363}a{color:#235fa9}small{color:#596981}h2{scroll-margin-top:15px}@media(max-width:800px){.grid{grid-template-columns:1fr}main{padding:12px}}
-</style><main><header><small>АЛГЕБРА · 7 КЛАСС · </small><h1>Приведение подобных слагаемых</h1><p>Упрости выражение и запиши ответ.</p><b id="count"></b><progress id="progress" max="55"></progress></header><aside><b>Вспомни правило</b><p>Подобные слагаемые имеют одинаковую буквенную часть. Сложи их коэффициенты, учитывая знаки, а буквенную часть оставь без изменения.</p><div class="expr">4a − 7a + 2b = −3a + 2b</div><p>Если коэффициент равен 1, его не пишем. Если все слагаемые взаимно уничтожились, запиши 0.</p><small>В ответе можно менять порядок слагаемых. Используй русские или английские буквы одинакового начертания.</small></aside><nav><a href="#g0">Блок А</a><a href="#g1">Блок Б</a><a href="#g2">Блок В</a><a href="#g3">Блок Г</a></nav><nav><button class="primary" id="all">Проверить всё</button><button id="errors">К первой ошибке</button><button id="reset">Начать заново</button><span id="summary" aria-live="polite"></span></nav><div id="tasks"></div></main><script>
-const data=[[[6, "s"], [2, "s"]], [[10, "c"], [2, "c"], [9, "c"]], [[4, "t"], [6, "t"], [10, "t"], [3, "t"]], [[1, "x"], [4, "x"]], [[3, "p"], [7, "p"], [11, "p"]], [[12, "b"], [8, "b"], [9, "b"], [2, "b"]], [[-6, "b"], [10, "b"]], [[8, "y"], [-7, "y"], [-11, "y"]], [[6, "t"], [6, "t"], [12, "t"], [-11, "t"]], [[-2, "c"], [-7, "c"]], [[12, "c"], [-2, "c"], [7, "c"]], [[-7, "s"], [-10, "s"], [-4, "s"], [-2, "s"]], [[-2, "s"], [5, "s"]], [[-2, "n"], [-5, "n"], [9, "n"]], [[2, "x"], [-2, "x"]], [[4, "x"], [10, "b"], [7, ""], [1, ""]], [[8, "t"], [6, "y"], [3, ""], [9, "t"], [9, "t"]], [[6, "b"], [1, "x"], [11, ""], [2, "x"], [2, ""], [9, "x"]], [[3, "t"], [3, "m"], [7, ""], [5, "m"]], [[5, "m"], [5, "c"], [8, ""], [11, "m"], [9, "m"]], [[-2, "a"], [-2, "p"], [9, ""], [8, ""], [8, "p"], [-4, "p"]], [[-10, "s"], [-1, "m"], [11, ""], [8, ""]], [[11, "y"], [12, "n"], [-8, ""], [10, "n"], [-10, ""]], [[-2, "s"], [12, "p"], [6, ""], [6, "s"], [9, "s"], [-5, "s"]], [[-4, "p"], [-7, "m"], [-7, ""], [-12, "p"]], [[12, "y"], [4, "n"], [-2, ""], [10, "n"], [-5, "n"]], [[-12, "m"], [5, "s"], [-9, ""], [1, ""], [6, ""], [-11, "m"]], [[-11, "b"], [-5, "m"], [3, ""], [1, "b"]], [[-6, "x"], [-12, "a"], [4, ""], [9, "x"], [4, ""]], [[3, "x"], [-3, "x"], [4, "y"], [-4, "y"], [2, ""], [-2, ""]], [[4, "b"], [-8, "c"], [-5, ""], [-6, "c"]], [[3, "t"], [8, "s"], [9, ""], [-3, "t"], [5, "t"]], [[11, "b"], [6, "n"], [9, ""], [-6, "b"], [3, "n"], [-9, "b"]], [[-10, "s"], [8, "a"], [-4, ""], [-11, "s"], [3, ""], [-8, ""], [-1, ""]], [[8, "c"], [-8, "p"], [-8, ""], [1, "p"]], [[-1, "b"], [-7, "m"], [9, ""], [-12, "b"], [6, "m"]], [[2, "a"], [-7, "k"], [7, ""], [2, "a"], [-11, "a"], [-9, "a"]], [[-6, "y"], [3, "a"], [-4, ""], [-12, "a"], [12, ""], [-3, "y"], [-6, ""]], [[7, "b"], [12, "y"], [-8, ""], [1, "y"]], [[10, "c"], [4, "t"], [3, ""], [-11, "c"], [7, ""]], [[-8, "c"], [4, "s"], [-12, ""], [9, "s"], [5, "s"], [7, "s"]], [[12, "t"], [12, "x"], [-10, ""], [3, "t"], [5, "t"], [10, ""], [-7, "x"]], [[7, "m"], [-2, "p"], [-11, ""], [-11, ""]], [[-10, "y"], [-9, "k"], [7, ""], [12, ""], [-11, "y"]], [[3, "x"], [-3, "x"], [4, "y"], [-4, "y"], [2, ""], [-2, ""]], [[-18, "m"], [-24, "c"], [14, "b"], [-9, ""], [21, "m"], [-1, ""], [6, ""], [-1, "m"], [-20, "c"], [22, "m"]], [[-20, "s"], [19, "b"], [-15, "x"], [17, ""], [22, "x"], [22, "s"], [25, "b"], [-6, ""], [-22, "b"], [-25, ""], [-10, "x"]], [[2, "n"], [21, "c"], [8, "p"], [-23, ""], [-4, "n"], [-18, "p"], [-3, ""], [-3, ""], [-21, "c"], [18, "c"], [-12, ""], [-7, "p"]], [[19, "c"], [22, "n"], [22, "b"], [-17, ""], [2, "n"], [25, "b"], [-3, "b"], [8, "b"], [-3, "n"], [14, "c"], [-14, ""], [-7, "c"], [19, "c"]], [[15, "p"], [-11, "a"], [-12, "t"], [21, ""], [10, ""], [-24, "p"], [-12, "t"], [17, "t"], [2, "t"], [4, "p"]], [[-9, "b"], [6, "t"], [3, "y"], [23, ""], [-15, "b"], [16, "b"], [22, "t"], [8, ""], [-11, "y"], [16, "y"], [-3, "y"]], [[-4, "y"], [8, "c"], [-19, "n"], [21, "p"], [4, ""], [13, ""], [24, "c"], [-17, ""], [12, "n"], [5, "c"], [-13, "n"], [13, "y"]], [[-7, "p"], [-4, "y"], [14, "k"], [24, "c"], [8, ""], [11, "p"], [-24, "k"], [17, "c"], [7, "y"], [-7, "k"], [-17, "k"], [-6, "y"], [1, "c"]], [[1, "m"], [5, "t"], [3, "c"], [-2, "n"], [-22, ""], [9, "n"], [21, ""], [-16, "c"], [-15, "m"], [-18, "n"]], [[3, "x"], [-3, "x"], [4, "y"], [-4, "y"], [2, ""], [-2, ""], [5, "m"], [-5, "m"], [7, "k"], [-7, "k"]]];
-const map={'а':'a','в':'b','с':'c','е':'e','к':'k','м':'m','н':'h','о':'o','р':'p','т':'t','х':'x','у':'y'};
-function fmt(ts){return ts.map(([c,v],i)=>(c<0?' − ':i?' + ':'')+(Math.abs(c)===1&&v?'':Math.abs(c))+v).join('').trim()}
-function expected(ts){let r={};for(const [c,v] of ts)r[v]=(r[v]||0)+c;return Object.fromEntries(Object.entries(r).filter(([v,c])=>c!==0))}
-function parse(s){s=s.toLowerCase().replace(/\s/g,'').replace(/[−–]/g,'-').replace(/[а-векмнортху]/g,x=>map[x]||x).replace(/([0-9])[*·](?=[a-z])/g,'$1');if(s==='0')return {};if(!/^[+-]?(?:[1-9]\d*[a-z]?|[a-z])(?:[+-](?:[1-9]\d*[a-z]?|[a-z]))*$/.test(s))return null;let r={};for(let t of s.match(/[+-]?[^+-]+/g)){let m=t.match(/^([+-]?)(\d*)([a-z]?)$/);let v=m[3],c=(m[1]==='-'?-1:1)*Number(m[2]||1);if(Object.hasOwn(r,v)||!Number.isSafeInteger(c))return null;r[v]=c}return r}
-function same(a,b){return a!==null&&Object.keys(a).length===Object.keys(b).length&&Object.keys(b).every(k=>a[k]===b[k])}
-let state={};try{state=JSON.parse(localStorage.getItem('similar13-v1')||'{}')}catch{};const $=id=>document.getElementById(id);function save(){try{localStorage.setItem('similar13-v1',JSON.stringify(state))}catch{}}function update(){let n=data.filter((t,i)=>state[i]?.status==='ok').length;$('count').textContent=`Верно: ${n} из 55`;$('progress').value=n}function paint(i){let e=$('t'+i),s=state[i]?.status||'';e.className='task '+s;e.querySelector('.status').textContent=s==='ok'?'Верно!':s==='bad'?'Проверь коэффициенты и приведи все подобные слагаемые.':''}function check(i){let v=$('a'+i).value;state[i]={value:v,status:v.trim()?(same(parse(v),expected(data[i]))?'ok':'bad'):''};paint(i);save();update()}
-let offset=0;[15,15,15,10].forEach((n,g)=>{let section=document.createElement('section');section.id='g'+g;section.innerHTML=`<h2>Блок ${'АБВГ'[g]} · ${['Одна буквенная часть','Разные буквенные части и числа','Работа со знаками','Длинные выражения'][g]}</h2><div class="grid"></div>`;let grid=section.lastElementChild;for(let j=0;j<n;j++){let i=offset+j,e=document.createElement('div');e.id='t'+i;e.innerHTML=`<small>№ ${j+1}</small><div class="expr">${fmt(data[i])} =</div><div class="line"><input id="a${i}" aria-label="Ответ, блок ${'АБВГ'[g]}, номер ${j+1}" placeholder="Ответ" autocomplete="off" spellcheck="false"><button>Проверить</button></div><div class="status" aria-live="polite"></div>`;grid.append(e);let input=e.querySelector('input');input.value=state[i]?.value||'';input.oninput=()=>{state[i]={value:input.value,status:''};paint(i);save();update()};input.onkeydown=ev=>{if(ev.key==='Enter')check(i)};e.querySelector('button').onclick=()=>check(i)}$('tasks').append(section);for(let j=0;j<n;j++)paint(offset+j);offset+=n});$('all').onclick=()=>{data.forEach((t,i)=>check(i));$('summary').textContent=`Ошибок: ${Object.values(state).filter(s=>s.status==='bad').length}; без ответа: ${data.filter((t,i)=>!state[i]?.value?.trim()).length}`};$('errors').onclick=()=>{let i=data.findIndex((t,i)=>state[i]?.status==='bad');if(i>=0){$('t'+i).scrollIntoView({behavior:'smooth',block:'center'});$('a'+i).focus({preventScroll:true})}else $('summary').textContent='Проверенных ответов с ошибками нет.'};$('reset').onclick=()=>{if(confirm('Удалить все ответы?')){state={};data.forEach((t,i)=>{$('a'+i).value='';paint(i)});save();update();$('summary').textContent=''}};update();
-</script></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: приведение подобных слагаемых</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+  .sub b { color: #b91c1c; }
+  .sub code {
+    background: #f3f4f6; padding: 1px 6px; border-radius: 6px;
+    font-size: 13px; color: #111827;
+  }
+
+  /* ---------- Объяснение ---------- */
+  .explain {
+    display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; font-size: 14px;
+  }
+  .explain .rule b { color: #4338ca; }
+  .explain ul { margin: 6px 0 0; padding-left: 20px; }
+  .explain li { margin: 4px 0; }
+  .explain .examples { display: grid; gap: 8px; }
+  .explain .ex {
+    background: #fff; border: 1px solid #e1e9f3; border-radius: 10px;
+    padding: 8px 12px;
+  }
+  .explain .ex .lbl { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #309363; text-transform: uppercase; }
+  .explain .ex.minus .lbl { color: #c54b4b; }
+  .explain .ex .math { font: 20px Georgia, serif; margin-top: 4px; }
+  .explain .ex .math em { font-style: normal; color: #235fa9; }
+  .explain .ex.minus .math em { color: #c54b4b; }
+
+  /* ---------- Панели ---------- */
+  .bar {
+    display: flex; align-items: center; gap: 14px;
+    background: #eef2ff; border-radius: 10px; padding: 10px 14px;
+    margin-bottom: 18px; font-size: 14px;
+  }
+  .bar b { color: #4338ca; }
+  .progress {
+    flex: 1; height: 8px; background: #dbe0f5; border-radius: 6px; overflow: hidden;
+  }
+  .progress > div { height: 100%; width: 0; background: #4338ca; transition: .3s; }
+
+  .settings {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 14px;
+  }
+  .settings label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151; }
+  .settings select {
+    padding: 8px 10px; font-size: 14px; border: 2px solid #d1d5db;
+    border-radius: 8px; background: #fff; cursor: pointer;
+  }
+  .settings select:focus { border-color: #4338ca; outline: none; }
+  .hidden { display: none !important; }
+
+  .modes {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .modes button {
+    padding: 10px 14px; font-size: 14px; border-radius: 10px; cursor: pointer;
+    font-weight: 600; border: 2px solid #d1d5db; background: #fff; color: #374151;
+    transition: .15s;
+  }
+  .modes button.active {
+    border-color: #4338ca; background: #eef2ff; color: #3730a3;
+  }
+
+  /* ---------- ТРЕНИРОВОЧНЫЙ РЕЖИМ ---------- */
+  .task {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb;
+    margin-bottom: 12px; background: #fff;
+  }
+  .task .num { font-weight: 700; color: #9ca3af; min-width: 26px; }
+  .task .expr { font-size: 19px; font-weight: 600; letter-spacing: .3px; }
+  .task input {
+    width: 180px; padding: 8px 10px; font-size: 16px;
+    border: 2px solid #d1d5db; border-radius: 8px; outline: none;
+    text-align: center;
+  }
+  .task input:focus { border-color: #4338ca; }
+
+  .task.ok { background: #f0fdf4; border-color: #86efac; }
+  .task.err { background: #fef2f2; border-color: #fca5a5; }
+  .task .mark { font-size: 18px; font-weight: 700; }
+  .ok .mark { color: #16a34a; }
+  .err .mark { color: #dc2626; }
+  .task .hint { font-size: 14px; color: #6b7280; margin-left: auto; }
+  .task .hint b { color: #b91c1c; }
+  .task .errtype { font-size: 13px; color: #b91c1c; font-weight: 600; }
+
+  /* ---------- ПРОВЕРОЧНЫЙ РЕЖИМ ---------- */
+  .quiz-wrap { padding: 10px 0 4px; }
+  .quiz-counter {
+    font-size: 14px; color: #6b7280; margin-bottom: 14px; text-align: center;
+  }
+  .quiz-counter b { color: #4338ca; font-size: 16px; }
+  .quiz-expr {
+    font-size: 36px; font-weight: 700; text-align: center;
+    padding: 30px 16px; background: #f8fafc; border-radius: 14px;
+    border: 1px solid #e5e7eb; margin: 0 auto 22px; letter-spacing: .5px;
+    max-width: 680px;
+  }
+  .quiz-row {
+    display: flex; justify-content: center; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+    max-width: 680px; margin: 0 auto;
+  }
+  .quiz-row input {
+    width: 240px; padding: 14px 16px; font-size: 22px;
+    border: 2px solid #d1d5db; border-radius: 12px; outline: none;
+    text-align: center; font-weight: 600;
+  }
+  .quiz-row input:focus { border-color: #4338ca; }
+  .quiz-row > button {
+    padding: 14px 24px; font-size: 17px; border: none; border-radius: 12px;
+    background: #4338ca; color: #fff; font-weight: 700; cursor: pointer;
+  }
+  .quiz-row > button:hover { background: #3730a3; }
+  .quiz-feedback {
+    text-align: center; font-size: 18px; font-weight: 700;
+    margin: 18px auto 0; min-height: 52px; max-width: 680px;
+    line-height: 1.4;
+  }
+  .quiz-feedback.ok { color: #16a34a; }
+  .quiz-feedback.err { color: #dc2626; }
+  .quiz-feedback .small { font-size: 16px; font-weight: 700; color: #111827; }
+  .quiz-feedback .tag { font-size: 13px; font-weight: 700; color: #6b7280; }
+
+  /* ---------- РЕЗУЛЬТАТ ---------- */
+  .btns { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  button.primary {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #4338ca; color: #fff;
+  }
+  button.primary:hover { background: #3730a3; }
+  button.ghost {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; background: #e5e7eb; color: #374151;
+  }
+  button.ghost:hover { background: #d1d5db; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+
+  .result {
+    margin-top: 18px; padding: 16px; border-radius: 12px;
+    font-size: 16px; display: none;
+  }
+  .result.show { display: block; }
+  .result.good { background: #f0fdf4; color: #166534; }
+  .result.bad { background: #fef2f2; color: #991b1b; }
+  .result.warn { background: #fffbeb; color: #92400e; }
+  .stats { margin-top: 10px; font-size: 15px; line-height: 1.7; }
+  .stats b { font-weight: 700; }
+  .errsplit {
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,.55); font-size: 14px;
+  }
+  .errsplit .row { display: flex; gap: 18px; flex-wrap: wrap; }
+  .errsplit .bad { color: #b91c1c; font-weight: 700; }
+  .grade {
+    display: inline-block; margin-top: 12px; padding: 6px 16px;
+    border-radius: 999px; font-weight: 800; font-size: 20px;
+  }
+  .grade.g5 { background: #dcfce7; color: #166534; }
+  .grade.g4 { background: #dbeafe; color: #1e40af; }
+  .grade.g3 { background: #fef3c7; color: #92400e; }
+  .grade.g2 { background: #fee2e2; color: #991b1b; }
+
+  .back-home{
+    position:fixed; top:12px; right:12px; z-index:9999;
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; background:#fff; color:#1878c9;
+    border:1.5px solid #1878c9; border-radius:10px; text-decoration:none;
+    box-shadow:0 3px 10px rgba(23,50,94,.12); cursor:pointer; transition:.15s;
+  }
+  .back-home svg{ width:20px; height:20px; display:block; }
+  .back-home:hover{ background:#1878c9; color:#fff; transform:translateY(-1px); }
+  .back-home:focus-visible{ outline:2px solid #1878c9; outline-offset:2px; }
+  @media(max-width:700px){
+    .explain { grid-template-columns: 1fr; }
+  }
+  @media(max-width:520px){
+    .back-home{top:8px;right:8px;width:34px;height:34px}
+    .back-home svg{width:18px;height:18px}
+  }
+</style>
+</head>
+<body>
+<a class="back-home" href="index.html" aria-label="В главное меню" title="В главное меню">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 10.5 12 3l9 7.5"></path>
+    <path d="M5 9.5V21h14V9.5"></path>
+    <path d="M9.5 21v-6h5v6"></path>
+  </svg>
+</a>
+<div class="container">
+  <h1>🧮 Тренажёр: приведение подобных слагаемых</h1>
+  <div class="sub">
+    Упрости выражение и запиши ответ в одно поле.
+    Подобные слагаемые имеют одинаковую буквенную часть — сложи их коэффициенты.
+    Если все слагаемые взаимно уничтожились, запиши <code>0</code>.
+    В ответе можно менять порядок слагаемых.
+  </div>
+
+  <!-- Объяснение -->
+  <div class="explain">
+    <div class="rule">
+      <b>Правило приведения подобных</b>
+      <ul>
+        <li>Подобные слагаемые имеют <b>одинаковую буквенную часть</b>.</li>
+        <li>Сложи их <b>коэффициенты</b>, учитывая знаки, буквенную часть оставь без изменения.</li>
+        <li>Если коэффициент равен 1, его не пишут. Если коэффициент равен −1, пишут только минус.</li>
+        <li>Если все слагаемые взаимно уничтожились, в ответе <b>0</b>.</li>
+      </ul>
+    </div>
+    <div class="examples">
+      <div class="ex">
+        <div class="lbl">Пример</div>
+        <div class="math">4a − 7a + 2b = <em>−3a + 2b</em></div>
+      </div>
+      <div class="ex minus">
+        <div class="lbl">Взаимное уничтожение</div>
+        <div class="math">2x − 2x + 3y − 3y = <em>0</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings">
+    <label>Задание:
+      <select id="taskType">
+        <option value="similar" selected>Приведи подобные</option>
+        <option value="mixed">Смешанное</option>
+      </select>
+    </label>
+    <label>Раздел:
+      <select id="section">
+        <option value="letters" selected>Только буквы</option>
+        <option value="mixed">Буквы и числа</option>
+        <option value="signs">Работа со знаками</option>
+        <option value="long">Длинные выражения</option>
+        <option value="all">Все сразу</option>
+      </select>
+    </label>
+    <label>Уровень:
+      <select id="level">
+        <option value="easy">Лёгкий</option>
+        <option value="medium" selected>Средний</option>
+        <option value="hard">Сложный</option>
+      </select>
+    </label>
+    <label>Заданий:
+      <select id="count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="modes">
+    <button id="mode-training" class="active" data-mode="training">📋 Тренировочный (списком)</button>
+    <button id="mode-quiz" data-mode="quiz">🎯 Проверочный (по одному)</button>
+  </div>
+
+  <div class="bar">
+    <span>Решено: <b id="solved">0</b> / <span id="totalCount">10</span></span>
+    <div class="progress"><div id="pbar"></div></div>
+    <span>Верно: <b id="correct">0</b></span>
+  </div>
+
+  <!-- ТРЕНИРОВОЧНЫЙ РЕЖИМ -->
+  <div id="trainingWrap">
+    <div id="tasks"></div>
+    <div class="btns">
+      <button id="check" class="primary">Проверить</button>
+      <button id="reset" class="ghost">Пройти заново</button>
+    </div>
+  </div>
+
+  <!-- ПРОВЕРОЧНЫЙ РЕЖИМ -->
+  <div id="quizWrap" class="quiz-wrap hidden">
+    <div class="quiz-counter">Задание <b id="qCurrent">1</b> из <b id="qTotal">10</b></div>
+    <div class="quiz-expr" id="qExpr">—</div>
+    <div class="quiz-row" id="qRow"></div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// ==========================================================
+//  МОДЕЛЬ ЗАДАНИЯ
+//  Выражение = список слагаемых [коэффициент, буквенная часть].
+//  Пустая буквенная часть "" означает числовое слагаемое.
+//  Ответ — словарь { буквенная часть: коэффициент }, без нулей.
+// ==========================================================
+
+const LETTERS = ['a','b','c','x','y','m','n','k','p','s','t'];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ---------- Форматирование выражения ----------
+function fmtTerm(c, v, first) {
+  const abs = Math.abs(c);
+  let coef;
+  if (v === '') coef = String(abs);
+  else if (abs === 1) coef = '';
+  else coef = String(abs);
+
+  const sign = c < 0 ? (first ? '−' : ' − ') : (first ? '' : ' + ');
+  return sign + coef + v;
+}
+function fmtExpr(terms) {
+  return terms.map(([c, v], i) => fmtTerm(c, v, i === 0)).join('').trim();
+}
+
+// ---------- Ожидаемый ответ ----------
+function expectedAnswer(terms) {
+  const r = {};
+  for (const [c, v] of terms) {
+    r[v] = (r[v] || 0) + c;
+  }
+  const out = {};
+  for (const k in r) if (r[k] !== 0) out[k] = r[k];
+  return out;
+}
+
+// ---------- Парсер ответа ----------
+const RU_TO_EN = {
+  'а':'a','в':'b','с':'c','е':'e','к':'k','м':'m','н':'h','о':'o','р':'p','т':'t','х':'x','у':'y'
+};
+
+function parseAnswer(raw) {
+  if (!raw) return null;
+  let s = String(raw).toLowerCase().replace(/\s+/g, '');
+  // нормализация минусов
+  s = s.replace(/[−–—]/g, '-');
+  // русские буквы -> английские (одинакового начертания)
+  s = s.replace(/[а-я]/g, ch => RU_TO_EN[ch] || ch);
+  // убрать знаки умножения
+  s = s.replace(/([0-9])[*·](?=[a-z])/g, '$1');
+
+  if (s === '' || s === '0') return {};
+
+  // допустимые виды слагаемых: [знак]число?буква? ; разделители +/-
+  if (!/^[+-]?(?:\d*[a-z]?)(?:[+-]\d*[a-z]?)*$/.test(s)) return null;
+
+  const parts = s.match(/[+-]?[^+-]+/g);
+  if (!parts) return null;
+
+  const r = {};
+  for (const p of parts) {
+    const m = p.match(/^([+-]?)(\d*)([a-z]?)$/);
+    if (!m) return null;
+    const sign = m[1] === '-' ? -1 : 1;
+    const numStr = m[2];
+    const v = m[3];
+    // слагаемое не должно быть пустым
+    if (numStr === '' && v === '') return null;
+    const c = sign * (numStr === '' ? 1 : Number(numStr));
+    if (!Number.isSafeInteger(c)) return null;
+    if (Object.prototype.hasOwnProperty.call(r, v)) return null; // повтор буквенной части
+    r[v] = c;
+  }
+  // убрать нули
+  for (const k in r) if (r[k] === 0) delete r[k];
+  return r;
+}
+
+function sameAnswer(a, b) {
+  if (!a || !b) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (const k of kb) if (a[k] !== b[k]) return false;
+  return true;
+}
+
+// ---------- Генерация задания ----------
+// Возвращает массив [коэф, буква]
+function makeTerms(section, level) {
+  let terms = [];
+
+  // вспомогательные генераторы
+  function addLetterTerm(letter, coefRange) {
+    const c = rand(coefRange[0], coefRange[1]);
+    if (c !== 0) terms.push([c, letter]);
+  }
+  function addNumberTerm(coefRange) {
+    const c = rand(coefRange[0], coefRange[1]);
+    if (c !== 0) terms.push([c, '']);
+  }
+
+  if (section === 'letters') {
+    // 1–2 буквы, только буквенные слагаемые
+    const letterCount = level === 'easy' ? 1 : rand(1, 2);
+    const letters = shuffle(LETTERS.slice()).slice(0, letterCount);
+    const range = level === 'easy' ? [1, 9] : level === 'medium' ? [1, 12] : [1, 20];
+    letters.forEach(L => {
+      const n = level === 'easy' ? rand(2, 3) : rand(2, 4);
+      for (let i = 0; i < n; i++) addLetterTerm(L, range);
+    });
+  } else if (section === 'mixed') {
+    // 1–2 буквы + числа
+    const letterCount = level === 'easy' ? 1 : rand(1, 2);
+    const letters = shuffle(LETTERS.slice()).slice(0, letterCount);
+    const range = level === 'easy' ? [1, 9] : level === 'medium' ? [1, 12] : [1, 20];
+    letters.forEach(L => {
+      const n = level === 'easy' ? 2 : rand(2, 3);
+      for (let i = 0; i < n; i++) addLetterTerm(L, range);
+    });
+    const numN = level === 'easy' ? 2 : rand(2, 3);
+    for (let i = 0; i < numN; i++) addNumberTerm(range);
+  } else if (section === 'signs') {
+    // акцент на отрицательных коэффициентах
+    const letterCount = level === 'easy' ? 1 : rand(1, 2);
+    const letters = shuffle(LETTERS.slice()).slice(0, letterCount);
+    const range = level === 'easy' ? [1, 9] : level === 'medium' ? [1, 12] : [1, 20];
+    letters.forEach(L => {
+      const n = level === 'easy' ? 2 : rand(2, 4);
+      for (let i = 0; i < n; i++) {
+        const c = (Math.random() < 0.6 ? -1 : 1) * rand(range[0], range[1]);
+        terms.push([c, L]);
+      }
+    });
+    if (level !== 'easy') {
+      const n = rand(1, 2);
+      for (let i = 0; i < n; i++) {
+        const c = (Math.random() < 0.6 ? -1 : 1) * rand(range[0], range[1]);
+        terms.push([c, '']);
+      }
+    }
+  } else if (section === 'long') {
+    // длинное выражение: 3 буквы + числа
+    const letters = shuffle(LETTERS.slice()).slice(0, 3);
+    const range = level === 'easy' ? [1, 9] : level === 'medium' ? [1, 15] : [1, 25];
+    letters.forEach(L => {
+      const n = level === 'easy' ? 2 : rand(2, 3);
+      for (let i = 0; i < n; i++) addLetterTerm(L, range);
+    });
+    const numN = level === 'easy' ? 2 : rand(2, 4);
+    for (let i = 0; i < numN; i++) addNumberTerm(range);
+  } else {
+    // all — случайно
+    const forms = ['letters', 'mixed', 'signs', 'long'];
+    return makeTerms(pick(forms), level);
+  }
+
+  // перемешать слагаемые
+  terms = shuffle(terms);
+
+  // Иногда добавляем пары, взаимно уничтожающиеся
+  if (Math.random() < 0.25 && terms.length > 0) {
+    const [c, v] = pick(terms);
+    terms.push([-c, v]);
+    terms = shuffle(terms);
+  }
+
+  return terms;
+}
+
+// ==========================================================
+//  СОСТОЯНИЕ И DOM
+// ==========================================================
+const state = {
+  mode: 'training',
+  taskType: 'similar',
+  section: 'letters',
+  level: 'medium',
+  count: 10,
+  tasks: []
+};
+
+const els = {
+  taskType: document.getElementById('taskType'),
+  section: document.getElementById('section'),
+  level: document.getElementById('level'),
+  count: document.getElementById('count'),
+  solved: document.getElementById('solved'),
+  correct: document.getElementById('correct'),
+  totalCount: document.getElementById('totalCount'),
+  pbar: document.getElementById('pbar'),
+  tasks: document.getElementById('tasks'),
+  result: document.getElementById('result'),
+  trainingWrap: document.getElementById('trainingWrap'),
+  quizWrap: document.getElementById('quizWrap'),
+  modeTraining: document.getElementById('mode-training'),
+  modeQuiz: document.getElementById('mode-quiz'),
+  check: document.getElementById('check'),
+  reset: document.getElementById('reset'),
+  qCurrent: document.getElementById('qCurrent'),
+  qTotal: document.getElementById('qTotal'),
+  qExpr: document.getElementById('qExpr'),
+  qRow: document.getElementById('qRow'),
+  qFeedback: document.getElementById('qFeedback')
+};
+
+let quizState = null;
+
+function readSettings() {
+  state.taskType = els.taskType.value;
+  state.section = els.section.value;
+  state.level = els.level.value;
+  state.count = parseInt(els.count.value, 10);
+}
+
+function buildSet() {
+  const set = [];
+  for (let i = 0; i < state.count; i++) {
+    const terms = makeTerms(state.section, state.level);
+    set.push({ terms, expected: expectedAnswer(terms) });
+  }
+  return set;
+}
+
+// ---------- Строка правильного ответа ----------
+function answerString(expected) {
+  const keys = Object.keys(expected);
+  if (keys.length === 0) return '0';
+  // буквенные части сначала, числа в конце — для читаемости
+  keys.sort((a, b) => {
+    if (a === '' && b !== '') return 1;
+    if (b === '' && a !== '') return -1;
+    return a.localeCompare(b);
+  });
+  return keys.map((k, i) => fmtTerm(expected[k], k, i === 0)).join('').trim();
+}
+
+// ==========================================================
+//  ТРЕНИРОВОЧНЫЙ РЕЖИМ
+// ==========================================================
+function startTraining() {
+  state.mode = 'training';
+  state.tasks = buildSet();
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+  els.trainingWrap.classList.remove('hidden');
+  els.quizWrap.classList.add('hidden');
+
+  els.tasks.innerHTML = '';
+  state.tasks.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.dataset.i = i;
+    div.innerHTML = `<span class="num">${i + 1}.</span><span class="expr">${fmtExpr(t.terms)} =</span>`;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = 'Ответ';
+    inp.autocomplete = 'off';
+    inp.spellcheck = false;
+    inp.addEventListener('input', updateTrainingProgress);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkTraining(); });
+    div.appendChild(inp);
+    const tail = document.createElement('span');
+    tail.className = 'hint';
+    tail.innerHTML = `<span class="mark"></span> <span class="hint-text"></span> <span class="errtype"></span>`;
+    div.appendChild(tail);
+    els.tasks.appendChild(div);
+  });
+}
+
+function updateTrainingProgress() {
+  let solved = 0;
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    const inp = div.querySelector('input');
+    if (inp && inp.value.trim() !== '') solved++;
+  });
+  els.solved.textContent = solved;
+  els.pbar.style.width = (solved / state.count * 100) + '%';
+}
+
+function checkTraining() {
+  let correct = 0, wrong = 0, empty = 0;
+  let coefErr = 0, parseErr = 0;
+
+  els.tasks.querySelectorAll('.task').forEach(div => {
+    const i = +div.dataset.i;
+    const task = state.tasks[i];
+    const inp = div.querySelector('input');
+    const mark = div.querySelector('.mark');
+    const hintText = div.querySelector('.hint-text');
+    const errEl = div.querySelector('.errtype');
+    div.classList.remove('ok', 'err');
+    mark.textContent = ''; hintText.textContent = ''; errEl.textContent = '';
+
+    const raw = inp.value.trim();
+    if (raw === '') { empty++; return; }
+
+    const userVal = parseAnswer(raw);
+    if (userVal === null) {
+      wrong++;
+      parseErr++;
+      div.classList.add('err');
+      mark.textContent = '✗';
+      hintText.innerHTML = 'ответ: <b>' + answerString(task.expected) + '</b>';
+      errEl.textContent = 'не удалось разобрать ответ';
+      return;
+    }
+
+    if (sameAnswer(userVal, task.expected)) {
+      correct++;
+      div.classList.add('ok');
+      mark.textContent = '✓';
+    } else {
+      wrong++;
+      coefErr++;
+      div.classList.add('err');
+      mark.textContent = '✗';
+      hintText.innerHTML = 'ответ: <b>' + answerString(task.expected) + '</b>';
+      errEl.textContent = 'проверь коэффициенты и подобные слагаемые';
+    }
+  });
+
+  els.correct.textContent = correct;
+  els.solved.textContent = state.count - empty;
+  els.pbar.style.width = '100%';
+  showTrainingResult(correct, wrong, empty, coefErr, parseErr, state.count);
+}
+
+function showTrainingResult(correct, wrong, empty, coefErr, parseErr, total) {
+  const stats = `
+    <div class="stats">
+      Всего заданий: <b>${total}</b><br>
+      Верно: <b>${correct}</b><br>
+      Неверно: <b>${wrong}</b><br>
+      Без ответа: <b>${empty}</b>
+    </div>
+    <div class="errsplit">
+      <div class="row">
+        <span>Ошибки в приведении: <span class="bad">${coefErr}</span></span>
+        <span>Не разобран ответ: <span class="bad">${parseErr}</span></span>
+      </div>
+    </div>`;
+  let cls, title;
+  if (correct === total) { cls = 'good'; title = '🎉 Отлично! Все задания решены верно!'; }
+  else if (correct >= Math.ceil(total * 0.8)) { cls = 'good'; title = 'Хороший результат!'; }
+  else if (correct >= Math.ceil(total * 0.5)) { cls = 'warn'; title = 'Есть над чем поработать.'; }
+  else { cls = 'bad'; title = 'Нужно потренироваться ещё.'; }
+  els.result.className = 'result show ' + cls;
+  els.result.innerHTML = title + stats;
+}
+
+// ==========================================================
+//  ПРОВЕРОЧНЫЙ РЕЖИМ
+// ==========================================================
+function startQuiz() {
+  state.mode = 'quiz';
+  state.tasks = buildSet();
+  quizState = { idx: 0, correct: 0, wrong: 0, coefErr: 0, parseErr: 0, finished: false };
+  els.totalCount.textContent = state.count;
+  els.solved.textContent = '0';
+  els.correct.textContent = '0';
+  els.pbar.style.width = '0%';
+  els.result.className = 'result';
+  els.result.innerHTML = '';
+
+  els.trainingWrap.classList.add('hidden');
+  els.quizWrap.classList.remove('hidden');
+  els.qTotal.textContent = state.count;
+  renderQuizTask();
+}
+
+function renderQuizTask() {
+  const i = quizState.idx;
+  if (i >= state.count) { finishQuiz(); return; }
+  const t = state.tasks[i];
+  els.qCurrent.textContent = i + 1;
+  els.qExpr.textContent = fmtExpr(t.terms) + ' =';
+  els.qFeedback.textContent = '';
+  els.qFeedback.className = 'quiz-feedback';
+  els.qRow.innerHTML = '';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Ответ';
+  inp.autocomplete = 'off';
+  inp.spellcheck = false;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitQuizAnswer(); });
+  els.qRow.appendChild(inp);
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Ответить';
+  btn.addEventListener('click', submitQuizAnswer);
+  els.qRow.appendChild(btn);
+
+  setTimeout(() => inp.focus(), 0);
+}
+
+function submitQuizAnswer() {
+  if (quizState.finished) return;
+  const inp = els.qRow.querySelector('input');
+  const raw = inp.value.trim();
+  if (raw === '') return;
+
+  const i = quizState.idx;
+  const task = state.tasks[i];
+  const userVal = parseAnswer(raw);
+  let ok = false, errType = '';
+  if (userVal === null) { errType = 'parse'; }
+  else if (sameAnswer(userVal, task.expected)) { ok = true; }
+  else { errType = 'coef'; }
+
+  if (ok) quizState.correct++;
+  else {
+    quizState.wrong++;
+    if (errType === 'parse') quizState.parseErr++;
+    else quizState.coefErr++;
+  }
+
+  els.qRow.querySelectorAll('input, button').forEach(el => { el.disabled = true; });
+
+  els.qFeedback.className = 'quiz-feedback ' + (ok ? 'ok' : 'err');
+  if (ok) {
+    els.qFeedback.innerHTML = '✓ Верно!';
+  } else {
+    const tag = errType === 'parse' ? 'не удалось разобрать ответ' : 'проверь коэффициенты и подобные слагаемые';
+    els.qFeedback.innerHTML =
+      `✗ Неверно. Правильный ответ: <span class="small">${answerString(task.expected)}</span><br><span class="tag">${tag}</span>`;
+  }
+
+  els.solved.textContent = i + 1;
+  els.correct.textContent = quizState.correct;
+  els.pbar.style.width = ((i + 1) / state.count * 100) + '%';
+
+  quizState.idx++;
+  setTimeout(() => {
+    if (quizState.idx < state.count) renderQuizTask();
+    else finishQuiz();
+  }, 1300);
+}
+
+function finishQuiz() {
+  quizState.finished = true;
+  els.quizWrap.classList.add('hidden');
+  const grade = computeGrade(quizState.correct, state.count);
+  showQuizResult(quizState.correct, quizState.wrong, quizState.coefErr, quizState.parseErr, state.count, grade);
+}
+
+function computeGrade(correct, total) {
+  if (correct === total) return 5;
+  const p = correct / total;
+  if (p >= 0.8) return 4;
+  if (p >= 0.5) return 3;
+  return 2;
+}
+
+function showQuizResult(correct, wrong, coefErr, parseErr, total, grade) {
+  const gradeClass = grade === 5 ? 'g5' : grade === 4 ? 'g4' : grade === 3 ? 'g3' : 'g2';
+  const stats = `
+    <div class="stats">
+      Всего заданий: <b>${total}</b><br>
+      Верно: <b>${correct}</b><br>
+      Неверно: <b>${wrong}</b>
+    </div>
+    <div class="errsplit">
+      <div class="row">
+        <span>Ошибки в приведении: <span class="bad">${coefErr}</span></span>
+        <span>Не разобран ответ: <span class="bad">${parseErr}</span></span>
+      </div>
+    </div>
+    <div class="grade ${gradeClass}">Оценка: ${grade}</div>`;
+  let cls, title;
+  if (correct === total) { cls = 'good'; title = '🎉 Отлично! Все задания решены верно!'; }
+  else if (grade === 4) { cls = 'good'; title = 'Хороший результат!'; }
+  else if (grade === 3) { cls = 'warn'; title = 'Есть над чем поработать.'; }
+  else { cls = 'bad'; title = 'Нужно потренироваться ещё.'; }
+  els.result.className = 'result show ' + cls;
+  els.result.innerHTML = title + stats;
+}
+
+// ==========================================================
+//  ПЕРЕКЛЮЧЕНИЕ
+// ==========================================================
+function setMode(mode) {
+  state.mode = mode;
+  els.modeTraining.classList.toggle('active', mode === 'training');
+  els.modeQuiz.classList.toggle('active', mode === 'quiz');
+  if (mode === 'training') startTraining();
+  else startQuiz();
+}
+
+function rebuild() {
+  readSettings();
+  if (state.mode === 'training') startTraining();
+  else startQuiz();
+}
+
+els.taskType.addEventListener('change', rebuild);
+els.section.addEventListener('change', rebuild);
+els.level.addEventListener('change', rebuild);
+els.count.addEventListener('change', rebuild);
+els.check.addEventListener('click', checkTraining);
+els.reset.addEventListener('click', startTraining);
+els.modeTraining.addEventListener('click', () => setMode('training'));
+els.modeQuiz.addEventListener('click', () => setMode('quiz'));
+
+// старт
+readSettings();
+startTraining();
+</script>
+</body>
+</html>
